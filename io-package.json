@@ -1,0 +1,101 @@
+{
+	"common": {
+		"name": "vedirect",
+		"version": "0.0.3",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"title": "Vedirect",
+		"titleLang": {
+			"en": "Vedirect",
+			"de": "Vedirect",
+			"ru": "Vedirect",
+			"pt": "Vedirect",
+			"nl": "Vedirect",
+			"fr": "Vedirect",
+			"it": "Vedirect",
+			"es": "Vedirecto",
+			"pl": "Vedirect",
+			"zh-cn": "Vedirect"
+		},
+		"desc": {
+			"en": "Read VE.direct data from Victron Solar Chargers",
+			"de": "Lesen Sie VE.direct-Daten von Victron Solar Chargers",
+			"ru": "Считайте данные VE.direct с Victron Solar Chargers.",
+			"pt": "Leia os dados VE.direct dos Victron Solar Chargers",
+			"nl": "Lees VE.direct-gegevens van Victron Solar Chargers",
+			"fr": "Lire les données VE.direct de Victron Solar Chargers",
+			"it": "Leggi i dati VE.direct dai caricatori solari Victron",
+			"es": "Lea los datos VE.direct de los cargadores solares Victron",
+			"pl": "Odczytaj dane VE.direct z ładowarki słonecznej Victron",
+			"zh-cn": "从Victron太阳能充电器读取VE.direct数据"
+		},
+		"authors": [
+			"DutchmanNL <rdrozda@hotmail.com>"
+		],
+		"keywords": [
+			"energy",
+			"connection",
+			"pv",
+			"solar",
+			"victron"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "main.js",
+		"icon": "vedirect.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.vedirect/master/admin/vedirect.png",
+		"readme": "https://github.com/iobroker-community-adapters/ioBroker.vedirect/blob/master/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "hardware",
+		"compact": true,
+		"materialize": true,
+		"dependencies": [
+			{
+				"js-controller": ">=1.4.2"
+			}
+		]
+	},
+	"native": {
+		"byTCPIP": false,
+		"byUSB": true,
+		"USBDevice": "/dev/ttyUSB3"
+	},
+	"objects": [],
+	"instanceObjects": [
+		{
+			"_id": "info",
+			"type": "channel",
+			"common": {
+				"name": "Information"
+			},
+			"native": {}
+		},
+		{
+			"_id": "info.connection",
+			"type": "state",
+			"common": {
+				"role": "indicator.connected",
+				"name": "Device or service connected",
+				"type": "boolean",
+				"read": true,
+				"write": false,
+				"def": false
+			},
+			"native": {}
+		}
+	]
+}
