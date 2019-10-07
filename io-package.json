@@ -1,19 +1,19 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.0.5",
+		"version": "0.0.6",
 		"news": {
 			"0.0.1": {
-				"en": "initial release",
-				"de": "Erstveröffentlichung",
-				"ru": "Начальная версия",
-				"pt": "lançamento inicial",
-				"nl": "Eerste uitgave",
-				"fr": "Première version",
-				"it": "Versione iniziale",
-				"es": "Versión inicial",
-				"pl": "Pierwsze wydanie",
-				"zh-cn": "首次出版"
+				"en": "Alpha release",
+				"de": "Alpha-Version",
+				"ru": "Альфа-релиз",
+				"pt": "Liberação alfa",
+				"nl": "Alpha release",
+				"fr": "Libération alpha",
+				"it": "Rilascio alfa",
+				"es": "Lanzamiento alfa",
+				"pl": "Wersja alfa",
+				"zh-cn": "阿尔法释放"
 			}
 		},
 		"title": "Vedirect",
