@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vedirect",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Read VE.direct data from Victron Solar Chargers",
   "author": {
     "name": "DutchmanNL",

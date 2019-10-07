@@ -273,128 +273,128 @@ class Vedirect extends utils.Adapter {
 			
 			switch(res[0]) {
 				case	'V':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case	'V2':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 				
 				case	'V3':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'VS':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 				
 				case    'VM':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 					
 				case    'DM':
-					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true});
 					break;
 
 				case    'VPV':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'I':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'I2':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 				
 				case    'I3':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'IL':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'SOC':
-					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true});
 					break;
 				
 				case    'AR':
-					this.setState(res[0], {val: await this.get_alarm_reason(res[1])});   
+					this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});   
 					break;
 
 				case    'OR':
-					this.setState(res[0], {val: await this.get_off_reason(res[1])});   
+					this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});   
 					break;
 
 				case    'H7':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'H8':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'H15':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'H16':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
 
 				case    'H17':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;
 
 				case    'H18':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;
 
 				case    'H19':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;					
 
 				case    'H20':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;
 
 				case    'H22':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;
 
 				case    'ERR':
-					this.setState(res[0], {val: await this.get_err_state(res[1])});   
+					this.setState(res[0], {val: await this.get_err_state(res[1]), ack: true});   
 					break;
 
 				case    'CS':
-					this.setState(res[0], {val: await this.get_cs_state(res[1])});   
+					this.setState(res[0], {val: await this.get_cs_state(res[1]), ack: true});   
 					break;
 	
 				case    'PID':
-					this.setState(res[0], {val: await this.get_product_longname(res[1])});   
+					this.setState(res[0], {val: await this.get_product_longname(res[1]), ack: true});   
 					break;
 
 				case    'MODE':
-					this.setState(res[0], {val: await this.get_device_mode(res[1])});   
+					this.setState(res[0], {val: await this.get_device_mode(res[1]), ack: true});   
 					break;
 	
 				case    'AC_OUT_V':
-					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true});
 					break;
 				
 				case    'AC_OUT_I':
-					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true});
 					break;
 
 				case    'MPPT':
-					this.setState(res[0], {val: await this.get_mppt_mode(res[1])});   
+					this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true});   
 					break;
 	
 				default  :
 					this.log.debug('No case matched for ' + res[0]);
-					this.setState(res[0], {val: res[1]});
+					this.setState(res[0], {val: res[1], ack: true});
 			}
 		}		
 	}
@@ -411,7 +411,7 @@ class Vedirect extends utils.Adapter {
 			},
 			native: {},
 		});
-		this.setState(name, {val: value});
+		this.setState(name, {val: value, ack: true});
 	}
 
 	/**
