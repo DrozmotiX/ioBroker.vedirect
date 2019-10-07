@@ -255,7 +255,7 @@ class Vedirect extends utils.Adapter {
 	}
 
 	async parse_serial(line) {
-		this.log.info('Line : ' + line);
+		this.log.debug('Line : ' + line);
 		const res = line.split('\t');
 		if (state_attr[res[0]] !== undefined) {
 			await this.setObjectAsync(res[0], {
@@ -393,7 +393,7 @@ class Vedirect extends utils.Adapter {
 					break;
 	
 				default  :
-					this.log.info('No case matched for ' + res[0]);
+					this.log.debug('No case matched for ' + res[0]);
 					this.setState(res[0], {val: res[1]});
 			}
 		}		
@@ -448,35 +448,6 @@ class Vedirect extends utils.Adapter {
 		}
 	}
 
-	/**
-	 * Is called if a subscribed object changes
-	 * @param {string} id
-	 * @param {ioBroker.Object | null | undefined} obj
-	 */
-	onObjectChange(id, obj) {
-		if (obj) {
-			// The object was changed
-			this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-		} else {
-			// The object was deleted
-			this.log.info(`object ${id} deleted`);
-		}
-	}
-
-	/**
-	 * Is called if a subscribed state changes
-	 * @param {string} id
-	 * @param {ioBroker.State | null | undefined} state
-	 */
-	onStateChange(id, state) {
-		if (state) {
-			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-		} else {
-			// The state was deleted
-			this.log.info(`state ${id} deleted`);
-		}
-	}
 }
 
 // @ts-ignore parent is a valid property on module
