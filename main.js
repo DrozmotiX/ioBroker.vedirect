@@ -2,20 +2,19 @@
 
 /*
  * Created with @iobroker/create-adapter v1.16.0
+ 	VE.Direct Protocol Version 3.26 from 27 November 2018
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
-
 // Load your modules here, e.g.:
-//const SerialPort = require('serialport');
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const state_attr = require(__dirname + '/lib/state_attr.js');
 
-const bmvdata = {};
 let client, serialPort;
+
 class Vedirect extends utils.Adapter {
 	/**
 	 * @param {Partial<ioBroker.AdapterOptions>} [options={}]
@@ -37,26 +36,18 @@ class Vedirect extends utils.Adapter {
 	 */
 	async onReady() {
 		// Initialize your adapter here
-		const useUSB = this.config.byUSB;
 		const USB_Device = this.config.USBDevice;
-
-
-		const port = new SerialPort('/dev/ttyUSB0', {
+		const port = new SerialPort(USB_Device, {
 			baudRate: 19200
 		});
 		const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
 		parser.on('data', (data)  => {
-
-//			this.log.info('test : ' + data);
 			this.parse_serial(data);
 			this.setState('info.connection', true, true);
-
 		});
-
 	}
 
 	async get_product_longname(pid) {
-
 		if (pid == '0x203') return('BMV-700');
 		if (pid == '0x204') return('BMV-702');
 		if (pid == '0x205') return('BMV-700H');
@@ -167,15 +158,106 @@ class Vedirect extends utils.Adapter {
 		return ('Unknown');
 	}
 
+	async get_alarm_reason(ar) {
+		if (ar == '1') return('Low Voltage');
+		if (ar == '2') return('High Voltage');
+		if (ar == '4') return('Low SOC');
+		if (ar == '8') return('Low Starter Voltage');
+		if (ar == '16') return('High Starter Voltage');
+		if (ar == '32') return('Low Temperature');
+		if (ar == '64') return('High Temperature');
+		if (ar == '128') return('Mid Voltage');
+		if (ar == '256') return('Overload');
+		if (ar == '512') return('DC-Ripple');
+		if (ar == '1024') return('Low V AC out');
+		if (ar == '2048') return('High V AC out');
+		if (ar == '4096') return('Short Circuit');
+		if (ar == '8192') return('BMS Lockout');
+		return ('Unknown');
+	}
+
+	async get_off_reason(or) {
+		if (or == '0x00000001') return('No input power');
+		if (or == '0x00000002') return('Switched off (power switch');
+		if (or == '0x00000004') return('Switched off (device mode register');
+		if (or == '0x00000008') return('Remote input');
+		if (or == '0x000000010') return('Protection active');
+		if (or == '0x000000020') return('Paygo');
+		if (or == '0x000000040') return('BMS');
+		if (or == '0x000000080') return('Engine shutdown detection');
+		if (or == '0x000000100') return('Analysing input voltage');
+		return ('Unknown');
+	}
+
+	async get_cap_ble(ble) {
+		if (ble == '0x00000001') return('BLE supports switching off');
+		if (ble == '0x00000002') return('BLE switching off is permanent');
+		return ('Unknown');
+	}
+
+	async get_cs_state(cs) {
+		if (cs == '0') return('Off');
+		if (cs == '1') return('Low power / Load search');
+		if (cs == '2') return('Fault');
+		if (cs == '3') return('Bulk');
+		if (cs == '4') return('Absorption');
+		if (cs == '5') return('Float');
+		if (cs == '6') return('Storage');
+		if (cs == '7') return('Equalize (manual)');
+		if (cs == '9') return('Inverting');
+		if (cs == '11') return('Power Supply');
+		if (cs == '245') return('Starting-Up');
+		if (cs == '246') return('Repeated absorption');
+		if (cs == '247') return('Auto equalize / Recondition');
+		if (cs == '248') return('Battery Safe');
+		if (cs == '252') return('External Control');
+		return ('Unknown');
+	}
+
+	async get_err_state(err) {
+		if (err == '0') return('No Error');
+		if (err == '2') return('Battery voltage too high');
+		if (err == '17') return('Charger temperature too high');
+		if (err == '18') return('Charger overcurrent');
+		if (err == '19') return('Charger current reversed');
+		if (err == '20') return('Bulk time limit exceeded');
+		if (err == '21') return('Current sensor issue (sensor bias / sensor broken)');
+		if (err == '26') return('terminals overheated');
+		if (err == '28') return('Converter issue (dual converter models only)');
+		if (err == '33') return('Input voltage too high (solar panel)');
+		if (err == '34') return('Input current too high (solar panel)');
+		if (err == '38') return('Input shutdown (due to excessive battery voltage)');
+		if (err == '39') return('Input shutdown (due to current flow during off mode');
+		if (err == '65') return('Lost communication with one of devices');
+		if (err == '66') return('Syncronised charging device configuration issue');
+		if (err == '67') return('BMS connection lost');
+		if (err == '68') return('Network misconfigured');
+		if (err == '116') return('Factory calibration data lost');
+		if (err == '117') return('Invalid or incompatible firmware');
+		if (err == '119') return('User settings invalid');
+		return ('Unknown');
+	}
+	
+	async get_device_mode(mode) {
+		if (mode == '1') return('VE_REG_MODE_CHARGER');
+		if (mode == '2') return('VE_REG_MODE_INVERTER');
+		if (mode == '4') return('VE_REG_MODE_OFF');
+		if (mode == '5') return('VE_REG_MODE_ECO');
+		if (mode == '253') return('VE_REG_MODE_HIBERNATE');
+		return ('Unknown');
+	}
+
+	async get_mppt_mode(mppt) {
+		if (mppt == '0') return('Off');
+		if (mppt == '1') return('Voltage or current limited');
+		if (mppt == '2') return('MPP Tracker active');
+		return ('Unknown');
+	}
 
 	async parse_serial(line) {
 		this.log.info('Line : ' + line);
 		const res = line.split('\t');
-//		this.log.debug('Type ' + res[0] +  ' Value : ' + res[1]);
-//		this.log.debug('From Library: ' + state_attr[res[0]]);
-
 		if (state_attr[res[0]] !== undefined) {
-
 			await this.setObjectAsync(res[0], {
 				type: 'state',
 				common: {
@@ -189,70 +271,135 @@ class Vedirect extends utils.Adapter {
 				native: {},
 			});
 			
-			let calc;
 			switch(res[0]) {
-				case    'V':
-					this.log.error('Case V');
+				case	'V':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
-					// bmvdata.V = Math.floor(res[1]/10)/100;
 					break;
+
+				case	'V2':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+				
+				case	'V3':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
 				case    'VS':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
-					bmvdata.VS = Math.floor(res[1]/10)/100;
 					break;
-				case    'H20':
+				
+				case    'VM':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
-					//		bmvdata.H20 = Math.floor(res[1]/10)/100;
 					break;
-//				case    'I':
-//					bmvdata.I = res[1];
-//					break;
-//				case    'SOC':
-//					bmvdata.SOC = res[1]/10;
-//					break;
-//				case    'CE':
-//					bmvdata.CE = res[1];
-//					break;
+					
+				case    'DM':
+					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					break;
+
 				case    'VPV':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
-					bmvdata.VPV = Math.floor(res[1]/10)/100;
 					break;
-//				case    'PPV':
-//					bmvdata.PPV = res[1];
-//					break;
-				case    'PID':
-//					bmvdata.PID = res[1];
-					this.setState(res[0], {val: await this.get_product_longname(res[1])});
-//					bmvdata.LONG = await this.get_product_longname(res[1]);    
-					break;
-//				case    'H20':
-//					bmvdata.YT = res[1];
-//					break;
-//				case    'H22':
-//					bmvdata.YY = res[1];
-//					break;
-//				case    'BMV':
-//					bmvdata.BMV = res[1];
-//					bmvdata.LONG = res[1];    
-//					break;
 
+				case    'I':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'I2':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+				
+				case    'I3':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'IL':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'SOC':
+					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					break;
+				
+				case    'AR':
+					this.setState(res[0], {val: await this.get_alarm_reason(res[1])});   
+					break;
+
+				case    'OR':
+					this.setState(res[0], {val: await this.get_off_reason(res[1])});   
+					break;
+
+				case    'H7':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'H8':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'H15':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'H16':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000)});
+					break;
+
+				case    'H17':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;
+
+				case    'H18':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;
+
+				case    'H19':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;					
+
+				case    'H20':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;
+
+				case    'H22':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;
+
+				case    'ERR':
+					this.setState(res[0], {val: await this.get_err_state(res[1])});   
+					break;
+
+				case    'CS':
+					this.setState(res[0], {val: await this.get_cs_state(res[1])});   
+					break;
+	
+				case    'PID':
+					this.setState(res[0], {val: await this.get_product_longname(res[1])});   
+					break;
+
+				case    'MODE':
+					this.setState(res[0], {val: await this.get_device_mode(res[1])});   
+					break;
+	
+				case    'AC_OUT_V':
+					this.setState(res[0], {val: (Math.floor(res[1])/100)});
+					break;
+				
+				case    'AC_OUT_I':
+					this.setState(res[0], {val: (Math.floor(res[1])/10)});
+					break;
+
+				case    'MPPT':
+					this.setState(res[0], {val: await this.get_mppt_mode(res[1])});   
+					break;
+	
 				default  :
 					this.log.info('No case matched for ' + res[0]);
 					this.setState(res[0], {val: res[1]});
-
 			}
-
-		}
-				
-
-/*
-
-*/		
-
+		}		
 	}
 
 	async create_state(name, value){
-
 		await this.setObjectAsync(name, {
 			type: 'state',
 			common: {
@@ -264,10 +411,7 @@ class Vedirect extends utils.Adapter {
 			},
 			native: {},
 		});
-
 		this.setState(name, {val: value});
-
-
 	}
 
 	/**
@@ -333,24 +477,6 @@ class Vedirect extends utils.Adapter {
 			this.log.info(`state ${id} deleted`);
 		}
 	}
-
-	// /**
-	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-	//  * Using this method requires 'common.message' property to be set to true in io-package.json
-	//  * @param {ioBroker.Message} obj
-	//  */
-	// onMessage(obj) {
-	// 	if (typeof obj === 'object' && obj.message) {
-	// 		if (obj.command === 'send') {
-	// 			// e.g. send email or pushover or whatever
-	// 			this.log.info('send command');
-
-	// 			// Send response in callback if required
-	// 			if (obj.callback) this.sendTo(obj.from, obj.command, 'Message received', obj.callback);
-	// 		}
-	// 	}
-	// }
-
 }
 
 // @ts-ignore parent is a valid property on module
