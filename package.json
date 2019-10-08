@@ -1,11 +1,14 @@
 {
   "name": "iobroker.vedirect",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Read VE.direct data from Victron Solar Chargers",
   "author": {
     "name": "DutchmanNL",
     "email": "rdrozda@hotmail.com"
   },
+  "contributors": [{
+    "name": "Andiling"
+  }],
   "homepage": "https://github.com/iobroker-community-adapters/ioBroker.vedirect",
   "license": "MIT",
   "keywords": [

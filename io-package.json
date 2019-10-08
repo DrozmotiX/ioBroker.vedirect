@@ -1,9 +1,9 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.0.6",
+		"version": "0.0.7",
 		"news": {
-			"0.0.1": {
+			"0.0.7": {
 				"en": "Alpha release",
 				"de": "Alpha-Version",
 				"ru": "Альфа-релиз",

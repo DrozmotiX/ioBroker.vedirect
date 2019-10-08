@@ -36,15 +36,35 @@ class Vedirect extends utils.Adapter {
 	 */
 	async onReady() {
 		// Initialize your adapter here
-		const USB_Device = this.config.USBDevice;
-		const port = new SerialPort(USB_Device, {
-			baudRate: 19200
-		});
-		const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
-		parser.on('data', (data)  => {
-			this.parse_serial(data);
+		this.setState('info.connection', false, true);
+
+		try {
+			
+			// Open Serial port connection
+			const USB_Device = this.config.USBDevice;
+			const port = new SerialPort(USB_Device, {
+				baudRate: 19200
+			});
+
+			// Indicate connection status
 			this.setState('info.connection', true, true);
-		});
+
+			// Open pipe and listen to parser to get data
+			const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
+			parser.on('data', (data)  => {
+				this.parse_serial(data);
+			});
+
+			serialPort.on('error', (error) => {
+				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
+			});
+		
+		} catch (error) {
+			this.log.error('Conecting to Vedirect device failed !');
+			this.log.error(error);
+				
+		}
+
 	}
 
 	async get_product_longname(pid) {
@@ -260,7 +280,7 @@ class Vedirect extends utils.Adapter {
 		this.log.debug('Line : ' + line);
 		const res = line.split('\t');
 		if (state_attr[res[0]] !== undefined) {
-			await this.setObjectAsync(res[0], {
+			await this.setObjectNotExistsAsync(res[0], {
 				type: 'state',
 				common: {
 					name: state_attr[res[0]].name,
@@ -402,7 +422,7 @@ class Vedirect extends utils.Adapter {
 	}
 
 	async create_state(name, value){
-		await this.setObjectAsync(name, {
+		await this.setObjectNotExistsAsync(name, {
 			type: 'state',
 			common: {
 				name: name,
@@ -422,25 +442,20 @@ class Vedirect extends utils.Adapter {
 	 */
 	onUnload(callback) {
 		try {
-			const useUSB = this.config.byUSB;
-			const useTCP = this.config.byTCPIP;
+		
+			serialPort.close();
+			this.log.info('VE.direct Terminated, all USB connections closed');
 
-			if (useTCP){
-				client.end();
-			}			
-			
-			if(useUSB) {
-				serialPort.close();
-				this.log.info('VE.direct Terminated, all USB connections closed');
-			}
-			
 			// Write message in log related to server connection
 			client.on('end', () => {
 				// Need to add logic for retry / restart
 				this.log.warn('VE.direct : disconnected');
 			});
 
-			//	serialPort.on('error', function(error) {
+			serialPort.on('error', (error) => {
+				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
+			});
+
 			serialPort.on('close', () => {
 				this.log.warn('VE.direct : disconnected');
 			});
