@@ -159,6 +159,7 @@ class Vedirect extends utils.Adapter {
 	}
 
 	async get_alarm_reason(ar) {
+		if (ar == '0') return('Normal Operation');
 		if (ar == '1') return('Low Voltage');
 		if (ar == '2') return('High Voltage');
 		if (ar == '4') return('Low SOC');
@@ -177,6 +178,7 @@ class Vedirect extends utils.Adapter {
 	}
 
 	async get_off_reason(or) {
+		if (or == '0x00000000') return('Normal Operation');
 		if (or == '0x00000001') return('No input power');
 		if (or == '0x00000002') return('Switched off (power switch');
 		if (or == '0x00000004') return('Switched off (device mode register');
