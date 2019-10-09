@@ -345,6 +345,10 @@ class Vedirect extends utils.Adapter {
 				case    'AR':
 					this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});   
 					break;
+				
+				case    'WARN':
+					this.setState(res[0], {val: await this.get_alarm_reason(res[1])});   
+					break;
 
 				case    'OR':
 					this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});   
