@@ -1,8 +1,20 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.0.7",
+		"version": "0.0.8",
 		"news": {
+			"0.0.8": {
+				"en": "Propper connection state handling and reconnect when lost",
+				"de": "Ordnungsgemäße Behandlung des Verbindungsstatus und Wiederverbindung bei Verlust",
+				"ru": "Обработка состояния соединения Propper и переподключение в случае потери",
+				"pt": "Manuseie o estado da conexão e reconecte-se quando for perdido",
+				"nl": "Correcte afhandeling van de verbindingsstatus en opnieuw verbinden bij verlies",
+				"fr": "Gestion correcte de l'état des connexions et reconnexion en cas de perte",
+				"it": "Gestione dello stato di connessione del propper e ricollegamento in caso di perdita",
+				"es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
+				"pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
+				"zh-cn": "支持器连接状态处理，丢失时重新连接"
+			},
 			"0.0.7": {
 				"en": "Alpha release",
 				"de": "Alpha-Version",
