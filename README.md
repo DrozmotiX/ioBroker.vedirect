@@ -20,6 +20,9 @@ Set the propper device (example /dev/ttyUSB0) in adapter config.
 
 ## Changelog
 
+### 0.0.9
+* (Andiling) improve state attributes
+
 ### 0.0.8
 * (DutchmanNL) set connection state to false when no data received for 10 seconds
 * (DutchmanNL & Andiling) reconnect to USB when connection lost

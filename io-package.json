@@ -1,8 +1,20 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.0.8",
+		"version": "0.0.9",
 		"news": {
+			"0.0.9": {
+				"en": "improve state attributes",
+				"de": "Zustandsattribute verbessern",
+				"ru": "улучшить состояние атрибутов",
+				"pt": "melhorar atributos de estado",
+				"nl": "verbetering van attributen van de staat",
+				"fr": "améliorer les attributs d'état",
+				"it": "migliorare gli attributi di stato",
+				"es": "mejorar los atributos de estado",
+				"pl": "poprawić atrybuty stanu",
+				"zh-cn": "改善状态属性"
+			},
 			"0.0.8": {
 				"en": "Propper connection state handling and reconnect when lost",
 				"de": "Ordnungsgemäße Behandlung des Verbindungsstatus und Wiederverbindung bei Verlust",
