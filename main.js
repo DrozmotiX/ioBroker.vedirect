@@ -103,10 +103,6 @@ class Vedirect extends utils.Adapter {
 			switch(res[0]) {
 				case	'CE':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
-					break;
-					
-				case	'H6':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;	
 								
 				case	'V':
@@ -168,7 +164,11 @@ class Vedirect extends utils.Adapter {
 				case    'OR':
 					this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});   
 					break;
-
+				
+				case	'H6':
+					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
+					break;
+					
 				case    'H7':
 					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true});
 					break;
@@ -290,7 +290,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_alarm_reason(ar) {
@@ -300,7 +300,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_off_reason(or) {
@@ -310,7 +310,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_cap_ble(ble) {
@@ -320,17 +320,17 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_cs_state(cs) {
 		let name = null;
 		try {
-			name = AlarmReasons[cs].reason;
+			name = OperationStates[cs].state;
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_err_state(err) {
@@ -340,7 +340,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 	
 	async get_device_mode(mode) {
@@ -350,7 +350,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 	async get_mppt_mode(mppt) {
@@ -360,7 +360,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			name = 'unknown';
 		}
-	return name;
+		return name;
 	}
 
 }

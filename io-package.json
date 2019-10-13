@@ -1,8 +1,20 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.0.9",
+		"version": "0.1.0",
 		"news": {
+			"0.1.0": {
+				"en": "error in device mode corrected",
+    			"de": "Fehler im Gerätemodus behoben",
+    			"ru": "исправлена ошибка в режиме устройства",
+    			"pt": "erro no modo do dispositivo corrigido",
+    			"nl": "fout in apparaatmodus gecorrigeerd",
+    			"fr": "erreur en mode appareil corrigée",
+    			"it": "errore nella modalità dispositivo corretto",
+    			"es": "error en modo dispositivo corregido",
+    			"pl": "poprawiony błąd w trybie urządzenia",
+    			"zh-cn": "设备模式下的错误已更正"
+			},
 			"0.0.9": {
 				"en": "improve state attributes",
 				"de": "Zustandsattribute verbessern",

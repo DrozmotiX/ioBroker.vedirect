@@ -12,13 +12,16 @@
 
 ## vedirect adapter for ioBroker
 
-Read VE.direct data from Victron Solar Chargers by USB connection.
+Read VE.direct data from a Victron device with vedirect connector over USB <-> serial connection.
 
 ### Configuration
 
 Set the propper device (example /dev/ttyUSB0) in adapter config.
 
 ## Changelog
+
+### 0.1.0
+* (Andiling) error in device modes corrected
 
 ### 0.0.9
 * (Andiling) improve state attributes
