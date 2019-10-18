@@ -20,7 +20,7 @@ const OffReasons = require(__dirname + '/lib/OffReasons.js');
 const DeviceModes = require(__dirname + '/lib/DeviceModes.js');
 const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
-let client, polling;
+let client, polling, parser;
 
 class Vedirect extends utils.Adapter {
 	/**
@@ -54,7 +54,7 @@ class Vedirect extends utils.Adapter {
 			});
 
 			// Open pipe and listen to parser to get data
-			const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
+			parser = port.pipe(new Readline({ delimiter: '\r\n' }));
 			
 			parser.on('data', (data)  => {
 				this.parse_serial(data);
@@ -71,7 +71,7 @@ class Vedirect extends utils.Adapter {
 
 			});
 
-			SerialPort.on('error', (error) => {
+			parser.on('error', (error) => {
 				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
 				this.setState('info.connection', false, true);
 			});
@@ -275,12 +275,12 @@ class Vedirect extends utils.Adapter {
 				this.log.warn('VE.direct : disconnected');
 			});
 
-			SerialPort.on('error', (error) => {
+			parser.on('error', (error) => {
 				this.setState('info.connection', false, true);
 				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
 			});
 
-			SerialPort.on('close', () => {
+			parser.on('close', () => {
 				this.setState('info.connection', false, true);
 				this.log.warn('VE.direct : disconnected');
 			});
