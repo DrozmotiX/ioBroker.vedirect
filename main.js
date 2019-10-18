@@ -20,7 +20,7 @@ const OffReasons = require(__dirname + '/lib/OffReasons.js');
 const DeviceModes = require(__dirname + '/lib/DeviceModes.js');
 const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
-let client, serialPort, polling;
+let client, polling;
 
 class Vedirect extends utils.Adapter {
 	/**
@@ -71,12 +71,14 @@ class Vedirect extends utils.Adapter {
 
 			});
 
-			serialPort.on('error', (error) => {
+			SerialPort.on('error', (error) => {
 				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
+				this.setState('info.connection', false, true);
 			});
 		
 		} catch (error) {
-			this.log.error('Conecting to Vedirect device failed !');
+			this.log.error('Connection to Vedirect device failed !');
+			this.setState('info.connection', false, true);
 			this.log.error(error);
 				
 		}
@@ -260,22 +262,26 @@ class Vedirect extends utils.Adapter {
 	 * @param {() => void} callback
 	 */
 	onUnload(callback) {
+		this.setState('info.connection', false, true);
 		try {
 		
-			serialPort.close();
+			SerialPort.close();
 			this.log.info('VE.direct Terminated, all USB connections closed');
 
 			// Write message in log related to server connection
 			client.on('end', () => {
+				this.setState('info.connection', false, true);
 				// Need to add logic for retry / restart
 				this.log.warn('VE.direct : disconnected');
 			});
 
-			serialPort.on('error', (error) => {
+			SerialPort.on('error', (error) => {
+				this.setState('info.connection', false, true);
 				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
 			});
 
-			serialPort.on('close', () => {
+			SerialPort.on('close', () => {
+				this.setState('info.connection', false, true);
 				this.log.warn('VE.direct : disconnected');
 			});
 			callback();
