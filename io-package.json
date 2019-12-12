@@ -1,8 +1,20 @@
 {
 	"common": {
 		"name": "vedirect",
-		"version": "0.1.0",
+		"version": "0.1.1",
 		"news": {
+			"0.1.1": {
+				"en": "Set state to NULL if no data received within 2 seconds.",
+				"de": "Setzen Status auf NULL, wenn innerhalb von 2 Sekunden keine Daten empfangen wurden.",
+				"ru": "Установите состояние в NULL, если данные не получены в течение 2 секунд.",
+				"pt": "Defina o estado como NULL se nenhum dado for recebido dentro de 2 segundos.",
+				"nl": "Zet de status op NULL als er binnen 2 seconden geen gegevens zijn ontvangen.",
+				"fr": "Définissez l'état sur NULL si aucune donnée n'est reçue dans les 2 secondes.",
+				"it": "Impostare lo stato su NULL se non vengono ricevuti dati entro 2 secondi.",
+				"es": "Establezca el estado en NULL si no recibe datos en 2 segundos.",
+				"pl": "Ustaw stan na NULL, jeśli nie otrzymano danych w ciągu 2 sekund.",
+				"zh-cn": "如果2秒钟内未收到数据，则将状态设置为NULL。"
+			},
 			"0.1.0": {
 				"en": "error in device mode corrected",
     			"de": "Fehler im Gerätemodus behoben",
