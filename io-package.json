@@ -108,7 +108,7 @@
 		"readme": "https://github.com/iobroker-community-adapters/ioBroker.vedirect/blob/master/README.md",
 		"loglevel": "info",
 		"mode": "daemon",
-		"type": "hardware",
+		"type": "energy",
 		"compact": true,
 		"materialize": true,
 		"dependencies": [
