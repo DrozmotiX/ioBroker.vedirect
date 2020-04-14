@@ -82,7 +82,7 @@ class Vedirect extends utils.Adapter {
 			this.log.error(error);
 				
 		}
-
+		setTimeout(sentryTest, 10000);
 	}
 
 	async parse_serial(line) {

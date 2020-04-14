@@ -111,6 +111,11 @@
 		"type": "energy",
 		"compact": true,
 		"materialize": true,
+		"plugins": {
+			"sentry": {
+				"dsn": "https://794122c799494668aaf5f1c341dfd1c6@sentry.iobroker.net/29"
+			}
+		},
 		"dependencies": [
 			{
 				"js-controller": ">=1.4.2"
