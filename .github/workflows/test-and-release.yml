@@ -127,7 +127,7 @@ jobs:
           export SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           export SENTRY_URL=https://sentry.iobroker.net
           export SENTRY_ORG=iobroker
-          export SENTRY_PROJECT=iobroker-alexavedirect2
+          export SENTRY_PROJECT=iobroker.vedirect
           export SENTRY_VERSION=iobroker.vedirect@${{ env.VERSION }}
           sentry-cli releases new $SENTRY_VERSION
           sentry-cli releases finalize $SENTRY_VERSION
