@@ -1,154 +1,166 @@
 {
-	"common": {
-		"name": "vedirect",
-		"version": "0.1.1",
-		"news": {
-			"0.1.1": {
-				"en": "Set state to NULL if no data received within 2 seconds.",
-				"de": "Setzen Status auf NULL, wenn innerhalb von 2 Sekunden keine Daten empfangen wurden.",
-				"ru": "Установите состояние в NULL, если данные не получены в течение 2 секунд.",
-				"pt": "Defina o estado como NULL se nenhum dado for recebido dentro de 2 segundos.",
-				"nl": "Zet de status op NULL als er binnen 2 seconden geen gegevens zijn ontvangen.",
-				"fr": "Définissez l'état sur NULL si aucune donnée n'est reçue dans les 2 secondes.",
-				"it": "Impostare lo stato su NULL se non vengono ricevuti dati entro 2 secondi.",
-				"es": "Establezca el estado en NULL si no recibe datos en 2 segundos.",
-				"pl": "Ustaw stan na NULL, jeśli nie otrzymano danych w ciągu 2 sekund.",
-				"zh-cn": "如果2秒钟内未收到数据，则将状态设置为NULL。"
-			},
-			"0.1.0": {
-				"en": "error in device mode corrected",
-    			"de": "Fehler im Gerätemodus behoben",
-    			"ru": "исправлена ошибка в режиме устройства",
-    			"pt": "erro no modo do dispositivo corrigido",
-    			"nl": "fout in apparaatmodus gecorrigeerd",
-    			"fr": "erreur en mode appareil corrigée",
-    			"it": "errore nella modalità dispositivo corretto",
-    			"es": "error en modo dispositivo corregido",
-    			"pl": "poprawiony błąd w trybie urządzenia",
-    			"zh-cn": "设备模式下的错误已更正"
-			},
-			"0.0.9": {
-				"en": "improve state attributes",
-				"de": "Zustandsattribute verbessern",
-				"ru": "улучшить состояние атрибутов",
-				"pt": "melhorar atributos de estado",
-				"nl": "verbetering van attributen van de staat",
-				"fr": "améliorer les attributs d'état",
-				"it": "migliorare gli attributi di stato",
-				"es": "mejorar los atributos de estado",
-				"pl": "poprawić atrybuty stanu",
-				"zh-cn": "改善状态属性"
-			},
-			"0.0.8": {
-				"en": "Propper connection state handling and reconnect when lost",
-				"de": "Ordnungsgemäße Behandlung des Verbindungsstatus und Wiederverbindung bei Verlust",
-				"ru": "Обработка состояния соединения Propper и переподключение в случае потери",
-				"pt": "Manuseie o estado da conexão e reconecte-se quando for perdido",
-				"nl": "Correcte afhandeling van de verbindingsstatus en opnieuw verbinden bij verlies",
-				"fr": "Gestion correcte de l'état des connexions et reconnexion en cas de perte",
-				"it": "Gestione dello stato di connessione del propper e ricollegamento in caso di perdita",
-				"es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
-				"pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
-				"zh-cn": "支持器连接状态处理，丢失时重新连接"
-			},
-			"0.0.7": {
-				"en": "Alpha release",
-				"de": "Alpha-Version",
-				"ru": "Альфа-релиз",
-				"pt": "Liberação alfa",
-				"nl": "Alpha release",
-				"fr": "Libération alpha",
-				"it": "Rilascio alfa",
-				"es": "Lanzamiento alfa",
-				"pl": "Wersja alfa",
-				"zh-cn": "阿尔法释放"
-			}
-		},
-		"title": "Vedirect",
-		"titleLang": {
-			"en": "Vedirect",
-			"de": "Vedirect",
-			"ru": "Vedirect",
-			"pt": "Vedirect",
-			"nl": "Vedirect",
-			"fr": "Vedirect",
-			"it": "Vedirect",
-			"es": "Vedirecto",
-			"pl": "Vedirect",
-			"zh-cn": "Vedirect"
-		},
-		"desc": {
-			"en": "Read VE.direct data from Victron Solar Chargers",
-			"de": "Lesen Sie VE.direct-Daten von Victron Solar Chargers",
-			"ru": "Считайте данные VE.direct с Victron Solar Chargers.",
-			"pt": "Leia os dados VE.direct dos Victron Solar Chargers",
-			"nl": "Lees VE.direct-gegevens van Victron Solar Chargers",
-			"fr": "Lire les données VE.direct de Victron Solar Chargers",
-			"it": "Leggi i dati VE.direct dai caricatori solari Victron",
-			"es": "Lea los datos VE.direct de los cargadores solares Victron",
-			"pl": "Odczytaj dane VE.direct z ładowarki słonecznej Victron",
-			"zh-cn": "从Victron太阳能充电器读取VE.direct数据"
-		},
-		"authors": [
-			"DutchmanNL <rdrozda@hotmail.com>"
-		],
-		"keywords": [
-			"energy",
-			"connection",
-			"pv",
-			"solar",
-			"victron"
-		],
-		"license": "MIT",
-		"platform": "Javascript/Node.js",
-		"main": "main.js",
-		"icon": "vedirect.png",
-		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.vedirect/master/admin/vedirect.png",
-		"readme": "https://github.com/iobroker-community-adapters/ioBroker.vedirect/blob/master/README.md",
-		"loglevel": "info",
-		"mode": "daemon",
-		"type": "energy",
-		"compact": true,
-		"materialize": true,
-		"plugins": {
-			"sentry": {
-				"dsn": "https://794122c799494668aaf5f1c341dfd1c6@sentry.iobroker.net/29"
-			}
-		},
-		"dependencies": [
-			{
-				"js-controller": ">=1.4.2"
-			}
-		]
-	},
-	"native": {
-		"byTCPIP": false,
-		"byUSB": true,
-		"USBDevice": "/dev/ttyUSB3"
-	},
-	"objects": [],
-	"instanceObjects": [
-		{
-			"_id": "info",
-			"type": "channel",
-			"common": {
-				"name": "Information"
-			},
-			"native": {}
-		},
-		{
-			"_id": "info.connection",
-			"type": "state",
-			"common": {
-				"role": "indicator.connected",
-				"name": "Device or service connected",
-				"type": "boolean",
-				"read": true,
-				"write": false,
-				"def": false
-			},
-			"native": {}
-		}
-	]
+    "common": {
+        "name": "vedirect",
+        "version": "0.1.2",
+        "news": {
+            "0.1.2": {
+                "en": "Fix sentry issue, error in opening USB-Port",
+                "de": "Behebung des Wachproblems, Fehler beim Öffnen des USB-Anschlusses",
+                "ru": "Исправить проблему с часовым, ошибка при открытии USB-порта",
+                "pt": "Corrigir problema de sentinela, erro ao abrir a porta USB",
+                "nl": "Fix schildwachtkwestie, fout bij het openen van de USB-poort",
+                "fr": "Correction d'un problème de sentinelle, erreur lors de l'ouverture du port USB",
+                "it": "Risolto il problema della sentinella, errore nell'apertura della porta USB",
+                "es": "Solucionar problema de centinela, error al abrir el puerto USB",
+                "pl": "Napraw problem z działkiem, błąd podczas otwierania portu USB",
+                "zh-cn": "修复哨兵问题，打开USB端口时出错"
+            },
+            "0.1.1": {
+                "en": "Set state to NULL if no data received within 2 seconds.",
+                "de": "Setzen Status auf NULL, wenn innerhalb von 2 Sekunden keine Daten empfangen wurden.",
+                "ru": "Установите состояние в NULL, если данные не получены в течение 2 секунд.",
+                "pt": "Defina o estado como NULL se nenhum dado for recebido dentro de 2 segundos.",
+                "nl": "Zet de status op NULL als er binnen 2 seconden geen gegevens zijn ontvangen.",
+                "fr": "Définissez l'état sur NULL si aucune donnée n'est reçue dans les 2 secondes.",
+                "it": "Impostare lo stato su NULL se non vengono ricevuti dati entro 2 secondi.",
+                "es": "Establezca el estado en NULL si no recibe datos en 2 segundos.",
+                "pl": "Ustaw stan na NULL, jeśli nie otrzymano danych w ciągu 2 sekund.",
+                "zh-cn": "如果2秒钟内未收到数据，则将状态设置为NULL。"
+            },
+            "0.1.0": {
+                "en": "error in device mode corrected",
+                "de": "Fehler im Gerätemodus behoben",
+                "ru": "исправлена ошибка в режиме устройства",
+                "pt": "erro no modo do dispositivo corrigido",
+                "nl": "fout in apparaatmodus gecorrigeerd",
+                "fr": "erreur en mode appareil corrigée",
+                "it": "errore nella modalità dispositivo corretto",
+                "es": "error en modo dispositivo corregido",
+                "pl": "poprawiony błąd w trybie urządzenia",
+                "zh-cn": "设备模式下的错误已更正"
+            },
+            "0.0.9": {
+                "en": "improve state attributes",
+                "de": "Zustandsattribute verbessern",
+                "ru": "улучшить состояние атрибутов",
+                "pt": "melhorar atributos de estado",
+                "nl": "verbetering van attributen van de staat",
+                "fr": "améliorer les attributs d'état",
+                "it": "migliorare gli attributi di stato",
+                "es": "mejorar los atributos de estado",
+                "pl": "poprawić atrybuty stanu",
+                "zh-cn": "改善状态属性"
+            },
+            "0.0.8": {
+                "en": "Propper connection state handling and reconnect when lost",
+                "de": "Ordnungsgemäße Behandlung des Verbindungsstatus und Wiederverbindung bei Verlust",
+                "ru": "Обработка состояния соединения Propper и переподключение в случае потери",
+                "pt": "Manuseie o estado da conexão e reconecte-se quando for perdido",
+                "nl": "Correcte afhandeling van de verbindingsstatus en opnieuw verbinden bij verlies",
+                "fr": "Gestion correcte de l'état des connexions et reconnexion en cas de perte",
+                "it": "Gestione dello stato di connessione del propper e ricollegamento in caso di perdita",
+                "es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
+                "pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
+                "zh-cn": "支持器连接状态处理，丢失时重新连接"
+            },
+            "0.0.7": {
+                "en": "Alpha release",
+                "de": "Alpha-Version",
+                "ru": "Альфа-релиз",
+                "pt": "Liberação alfa",
+                "nl": "Alpha release",
+                "fr": "Libération alpha",
+                "it": "Rilascio alfa",
+                "es": "Lanzamiento alfa",
+                "pl": "Wersja alfa",
+                "zh-cn": "阿尔法释放"
+            }
+        },
+        "title": "Vedirect",
+        "titleLang": {
+            "en": "Vedirect",
+            "de": "Vedirect",
+            "ru": "Vedirect",
+            "pt": "Vedirect",
+            "nl": "Vedirect",
+            "fr": "Vedirect",
+            "it": "Vedirect",
+            "es": "Vedirecto",
+            "pl": "Vedirect",
+            "zh-cn": "Vedirect"
+        },
+        "desc": {
+            "en": "Read VE.direct data from Victron Solar Chargers",
+            "de": "Lesen Sie VE.direct-Daten von Victron Solar Chargers",
+            "ru": "Считайте данные VE.direct с Victron Solar Chargers.",
+            "pt": "Leia os dados VE.direct dos Victron Solar Chargers",
+            "nl": "Lees VE.direct-gegevens van Victron Solar Chargers",
+            "fr": "Lire les données VE.direct de Victron Solar Chargers",
+            "it": "Leggi i dati VE.direct dai caricatori solari Victron",
+            "es": "Lea los datos VE.direct de los cargadores solares Victron",
+            "pl": "Odczytaj dane VE.direct z ładowarki słonecznej Victron",
+            "zh-cn": "从Victron太阳能充电器读取VE.direct数据"
+        },
+        "authors": [
+            "DutchmanNL <rdrozda@hotmail.com>"
+        ],
+        "keywords": [
+            "energy",
+            "connection",
+            "pv",
+            "solar",
+            "victron"
+        ],
+        "license": "MIT",
+        "platform": "Javascript/Node.js",
+        "main": "main.js",
+        "icon": "vedirect.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/iobroker-community-adapters/ioBroker.vedirect/master/admin/vedirect.png",
+        "readme": "https://github.com/iobroker-community-adapters/ioBroker.vedirect/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "daemon",
+        "type": "energy",
+        "compact": true,
+        "materialize": true,
+        "plugins": {
+            "sentry": {
+                "dsn": "https://794122c799494668aaf5f1c341dfd1c6@sentry.iobroker.net/29"
+            }
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=1.4.2"
+            }
+        ]
+    },
+    "native": {
+        "byTCPIP": false,
+        "byUSB": true,
+        "USBDevice": "/dev/ttyUSB3"
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "info",
+            "type": "channel",
+            "common": {
+                "name": "Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "info.connection",
+            "type": "state",
+            "common": {
+                "role": "indicator.connected",
+                "name": "Device or service connected",
+                "type": "boolean",
+                "read": true,
+                "write": false,
+                "def": false
+            },
+            "native": {}
+        }
+    ]
 }

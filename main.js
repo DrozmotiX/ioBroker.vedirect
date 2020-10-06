@@ -46,16 +46,22 @@ class Vedirect extends utils.Adapter {
 		this.setState('info.connection', false, true);
 
 		try {
-			
+
 			// Open Serial port connection
 			const USB_Device = this.config.USBDevice;
 			const port = new SerialPort(USB_Device, {
 				baudRate: 19200
 			});
 
+			port.on('error', (error) => {
+				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
+				this.setState('info.connection', false, true);
+			});
+
+
 			// Open pipe and listen to parser to get data
 			parser = port.pipe(new Readline({ delimiter: '\r\n' }));
-			
+
 			parser.on('data', (data)  => {
 				this.parse_serial(data);
 				// Indicate connection status
@@ -64,7 +70,7 @@ class Vedirect extends utils.Adapter {
 				(function () {if (polling) {clearTimeout(polling); polling = null;}})();
 				// timer
 				polling = setTimeout( () => {
-					// Set time-out on connectin state when 10 seconds no information received
+					// Set time-out on connecting state when 10 seconds no information received
 					this.setState('info.connection', false, true);
 					this.log.error('No data received for 10 seconds, connection lost ?');
 				}, 10000);
@@ -75,170 +81,180 @@ class Vedirect extends utils.Adapter {
 				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
 				this.setState('info.connection', false, true);
 			});
-		
+
 		} catch (error) {
 			this.log.error('Connection to Vedirect device failed !');
 			this.setState('info.connection', false, true);
 			this.log.error(error);
-				
+
 		}
 	}
 
 	async parse_serial(line) {
-		this.log.debug('Line : ' + line);
-		const res = line.split('\t');
-		if (state_attr[res[0]] !== undefined) {
-			await this.setObjectNotExistsAsync(res[0], {
-				type: 'state',
-				common: {
-					name: state_attr[res[0]].name,
-					type: state_attr[res[0]].type,
-					role: state_attr[res[0]].role,
-					unit: state_attr[res[0]].unit,
-					read: true,
-					write: false
-				},
-				native: {},
-			});
-			
-			switch(res[0]) {
-				case	'CE':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;	
-								
-				case	'V':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+		try {
 
-				case	'V2':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;	
+			this.log.debug('Line : ' + line);
+			const res = line.split('\t');
+			if (state_attr[res[0]] !== undefined) {
+				await this.setObjectNotExistsAsync(res[0], {
+					type: 'state',
+					common: {
+						name: state_attr[res[0]].name,
+						type: state_attr[res[0]].type,
+						role: state_attr[res[0]].role,
+						unit: state_attr[res[0]].unit,
+						read: true,
+						write: false
+					},
+					native: {},
+				});
 
-				case	'V3':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+				switch(res[0]) {
+					case	'CE':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'VS':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
-				
-				case    'VM':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
-					
-				case    'DM':
-					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
-					break;
+					case	'V':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'VPV':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case	'V2':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'I':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case	'V3':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'I2':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
-				
-				case    'I3':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'VS':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'IL':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'VM':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'SOC':
-					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
-					break;
-				
-				case    'AR':
-					this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});   
-					break;
-				
-				case    'WARN':
-					this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});   
-					break;
+					case    'DM':
+						this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
+						break;
 
-				case    'OR':
-					this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});   
-					break;
-				
-				case	'H6':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
-					
-				case    'H7':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'VPV':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'H8':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'I':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'H15':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'I2':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'H16':
-					this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
-					break;
+					case    'I3':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'H17':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;
+					case    'IL':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'H18':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;
+					case    'SOC':
+						this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
+						break;
 
-				case    'H19':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;					
+					case    'AR':
+						this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});
+						break;
 
-				case    'H20':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;
+					case    'WARN':
+						this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});
+						break;
 
-				case    'H22':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;
+					case    'OR':
+						this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});
+						break;
 
-				case    'ERR':
-					this.setState(res[0], {val: await this.get_err_state(res[1]), ack: true});   
-					break;
+					case	'H6':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'CS':
-					this.setState(res[0], {val: await this.get_cs_state(res[1]), ack: true});   
-					break;
-	
-				case    'PID':
-					this.setState(res[0], {val: await this.get_product_longname(res[1]), ack: true});   
-					break;
+					case    'H7':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'MODE':
-					this.setState(res[0], {val: await this.get_device_mode(res[1]), ack: true});   
-					break;
-	
-				case    'AC_OUT_V':
-					this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
-					break;
-				
-				case    'AC_OUT_I':
-					this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
-					break;
+					case    'H8':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
 
-				case    'MPPT':
-					this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true, expire : 2});   
-					break;
-	
-				default  :
-					this.log.debug('No case matched for ' + res[0]);
-					this.setState(res[0], {val: res[1], ack: true});
+					case    'H15':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
+
+					case    'H16':
+						this.setState(res[0], {val: (Math.floor(res[1])/1000), ack: true, expire : 2});
+						break;
+
+					case    'H17':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'H18':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'H19':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'H20':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'H22':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'ERR':
+						this.setState(res[0], {val: await this.get_err_state(res[1]), ack: true});
+						break;
+
+					case    'CS':
+						this.setState(res[0], {val: await this.get_cs_state(res[1]), ack: true});
+						break;
+
+					case    'PID':
+						this.setState(res[0], {val: await this.get_product_longname(res[1]), ack: true});
+						break;
+
+					case    'MODE':
+						this.setState(res[0], {val: await this.get_device_mode(res[1]), ack: true});
+						break;
+
+					case    'AC_OUT_V':
+						this.setState(res[0], {val: (Math.floor(res[1])/100), ack: true, expire : 2});
+						break;
+
+					case    'AC_OUT_I':
+						this.setState(res[0], {val: (Math.floor(res[1])/10), ack: true, expire : 2});
+						break;
+
+					case    'MPPT':
+						this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true, expire : 2});
+						break;
+
+					default  :
+						this.log.debug('No case matched for ' + res[0]);
+						this.setState(res[0], {val: res[1], ack: true});
+				}
 			}
-		}		
+
+
+		} catch (error) {
+			this.log.error('Connection to Vedirect device failed !');
+			this.setState('info.connection', false, true);
+			this.log.error(error);
+
+		}
 	}
 
 	async create_state(name, value){
@@ -263,7 +279,7 @@ class Vedirect extends utils.Adapter {
 	onUnload(callback) {
 		this.setState('info.connection', false, true);
 		try {
-		
+
 			SerialPort.close();
 			this.log.info('VE.direct Terminated, all USB connections closed');
 
@@ -347,7 +363,7 @@ class Vedirect extends utils.Adapter {
 		}
 		return name;
 	}
-	
+
 	async get_device_mode(mode) {
 		let name = null;
 		try {
