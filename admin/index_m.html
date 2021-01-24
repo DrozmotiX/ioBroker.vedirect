@@ -64,16 +64,36 @@
 <body>
 
 	<div class="m adapter-container">
-
 		<div class="row">
 			<div class="col s12 m4 l2">
 				<img src="vedirect.png" class="logo">
 			</div>
 		</div>
-		<div class="col s6 input-field">
-			<input type="text" class="value" id="USBDevice" />
-			<label for="USBDevice" class="translate">USBDevice</label>
+
+		<p class="translate title">Please choose your preferred settings</p>
+
+		<div class="row">
+
+			<div class="input-field col s2">
+				<!--	placeholder	-->
+			</div>
+
+			<div class="input-field col s4">
+				<input placeholder="Example : /dev/ttyUSB1" id="USBDevice" type="text" class="value">
+				<label for="USBDevice" class="translate">USBDevice</label>
+			</div>
+
+			<div class="input-field col s4">
+				<input placeholder="Leave empty or 0 to not expire states" id="expireTime" type="number" class="value">
+				<label for="expireTime" class="translate">expireTime</label>
+			</div>
+
+			<div class="input-field col s2">
+				<!--	placeholder	-->
+			</div>
+
 		</div>
+
 
 	</div>
 

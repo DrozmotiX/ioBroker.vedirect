@@ -135,9 +135,9 @@
         ]
     },
     "native": {
-        "byTCPIP": false,
         "byUSB": true,
-        "USBDevice": "/dev/ttyUSB3"
+        "USBDevice": "",
+        "expireTime": ""
     },
     "objects": [],
     "instanceObjects": [
