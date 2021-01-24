@@ -2,7 +2,7 @@
 
 /*
  * Created with @iobroker/create-adapter v1.16.0
- 	VE.Direct Protocol Version 3.26 from 27 November 2018
+ 	VE.Direct Protocol Version 3.29 from 20. July 2020
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -269,13 +269,13 @@ class Vedirect extends utils.Adapter {
                         break;
 
                     case    'MPPT':
-                        this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true, expire: 2});
-                        this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]));
+                        // this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true, expire: 2});
+                        this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]), true);
                         break;
 
                     default  :
                         this.log.debug('No case matched for ' + res[0]);
-                        this.setState(res[0], {val: res[1], ack: true});
+                        // this.setState(res[0], {val: res[1], ack: true});
                         this.stateSetCreate(res[0], res[0], res[1]);
                 }
             }
