@@ -11,7 +11,7 @@
       "name": "Andiling"
     }
   ],
-  "homepage": "https://github.com/iobroker-community-adapters/ioBroker.vedirect",
+  "homepage": "https://github.com/DrozmotiX/ioBroker.vedirect",
   "license": "MIT",
   "keywords": [
     "energy",
@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/iobroker-community-adapters/ioBroker.vedirect"
+    "url": "https://github.com/DrozmotiX/ioBroker.vedirect"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^2.4.0",
@@ -61,7 +61,7 @@
     "release": "release-script"
   },
   "bugs": {
-    "url": "https://github.com/iobroker-community-adapters/ioBroker.vedirect/issues"
+    "url": "https://github.com/DrozmotiX/ioBroker.vedirect/issues"
   },
   "readmeFilename": "README.md"
 }
