@@ -106,55 +106,55 @@ class Vedirect extends utils.Adapter {
 			if (stateAttr[res[0]] !== undefined) {
 				switch (res[0]) {   // Used for special modifications to write a state with correct values and types
 					case 'CE':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'V':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'V2':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'V3':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'VS':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'VM':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'DM':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
 						break;
 
 					case 'VPV':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'I':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'I2':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'I3':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'IL':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'SOC':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
 						break;
 
 					case 'AR':
@@ -170,43 +170,43 @@ class Vedirect extends utils.Adapter {
 						break;
 
 					case 'H6':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'H7':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'H8':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'H15':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'H16':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
 						break;
 
 					case 'H17':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'H18':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'H19':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'H20':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'H22':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'ERR':
@@ -226,19 +226,19 @@ class Vedirect extends utils.Adapter {
 						break;
 
 					case 'AC_OUT_V':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
 
 					case 'AC_OUT_I':
-						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true);
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
 						break;
 
 					case 'MPPT':
-						this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]), true);
+						this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]));
 						break;
 
 					case 'MON':
-						this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]), true);
+						this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]));
 						break;
 
 					default:    // Used for all other measure points with no required special handling
