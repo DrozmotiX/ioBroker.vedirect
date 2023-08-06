@@ -26,8 +26,13 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 ### __WORK IN PROGRESS__ - Implement protocol Version 3.32
 * (DutchmanNL) Optimise code
 * (Andiling) Add new product names of Vedirect
+<<<<<<< Updated upstream
 * (Andiling) Add option to admin for state expiration
 
+=======
+* (Andiling) Add option to admin for state expiration
+
+>>>>>>> Stashed changes
 ### 0.1.2 (2020-10-06)
 * (DutchmanNL) Fix sentry issue, error in opening USB-Port
 
