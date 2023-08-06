@@ -3,19 +3,6 @@
     "name": "vedirect",
     "version": "0.2.0-alpha.1",
     "news": {
-      "0.2.0-alpha.1": {
-        "en": "* Optimise code\n* Add new product names of Vedirect\n<<<<<<< Updated upstream\n* Add option to admin for state expiration\n\n=======\n* Add option to admin for state expiration\n\n>>>>>>> Stashed changes",
-        "de": "* Optimis-Code\n* Neue Produktnamen von Vedirect hinzufügen\n<<<<<<< ≤ Vorgeschaltet\n* Fügen Sie die Option zu admin für State Exiration\n\n=======\n* Fügen Sie die Option zu admin für State Exiration\n\n> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > Änderungen",
-        "ru": "* Оптимизируйте код\n* Добавить новые названия продуктов Vedirect\n<<<<<< Обновление upstream\n* Добавьте опцию в админ для истечения срока действия государства\n\n=======\n* Добавьте опцию в админ для истечения срока действия государства\n\n>>>>>> Пораженные изменения",
-        "pt": "* Código ideal\n* Adicionar novos nomes de produtos de Vedirect\n<<<<<< > < Actualizado a montante\n* Adicionar opção para admin para expiração do estado\n\n=======\n* Adicionar opção para admin para expiração do estado\n\n>>>>>>>>>> Alterações de classificação",
-        "nl": "♪ Optimis code\n♪ Voeg nieuwe productnamen toe van Verig\nQuality over Quantity (QoQ) Releases Vertaling:\n♪ Voeg de optie toe voor verval\n\n=======\n♪ Voeg de optie toe voor verval\n\n_ Vertaling:",
-        "fr": "* Code d ' optique\n* Ajouter de nouveaux noms de produits de Vedirect\nMise à jour en amont\n* Ajouter l'option d'administration pour l'expiration de l'état\n\n=======\n* Ajouter l'option d'administration pour l'expiration de l'état\n\nphytothérapie phytothérapie Changements apportés",
-        "it": "# Codice ottimizzato\n# Aggiungi nuovi nomi di prodotto di Vedirect\n<\n# Aggiungi l'opzione per admin per la scadenza dello stato\n\n=======\n# Aggiungi l'opzione per admin per la scadenza dello stato\n\n> > > > Cambiamenti di stato",
-        "es": "* Optimise code\n* Añadir nuevos nombres de productos de Vedirect\n- No\n* Añadir opción a admin para caducidad del estado\n\n=======\n* Añadir opción a admin para caducidad del estado\n\n\" Cambios graduales",
-        "pl": "* kod optimum\n* Nowe nazwy produktów\n<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> uaktualnione w górnym strumieniu\n* Addd option for admin for the state expiration (ang.)\n\n=======\n* Addd option for admin for the state expiration (ang.)\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Zmiana rolna",
-        "uk": "Ім'я * Оптимальний код\nІм'я * Додати нові імена продуктів Vedirect\n<<<<<<<< Оновлено\nІм'я * Додати параметр до адміністратора для закінчення терміну дії держави\n\n=======\nІм'я * Додати параметр до адміністратора для закінчення терміну дії держави\n\n>>>>> Виправлені зміни",
-        "zh-cn": "* A/64/50。 消费者法典\n* A/64/50。 新产品名称\n<<<<<<<<<<<<<<>>>>> 更新的上游\n* A/64/50。 增加国家到期期的专注\n\n=======\n* A/64/50。 增加国家到期期的专注\n\n> A. 恶化变化"
-      },
       "0.1.2": {
         "en": "Fix sentry issue, error in opening USB-Port",
         "de": "Behebung des Wachproblems, Fehler beim Öffnen des USB-Anschlusses",
