@@ -27,7 +27,7 @@
   "dependencies": {
     "@iobroker/adapter-core": "^3.0.3",
     "request": "^2.88.2",
-    "serialport": "^9.0.6"
+    "serialport": "^11.0.1"
   },
   "devDependencies": {
     "@alcalzone/release-script": "^3.6.0",
