@@ -2,7 +2,7 @@
 
 /*
  * Created with @iobroker/create-adapter v1.16.0
- 	VE.Direct Protocol Version 3.29 from 20. July 2020
+   VE.Direct Protocol Version 3.32 from 30. June 2021
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -20,6 +20,7 @@ const OffReasons = require(__dirname + '/lib/OffReasons.js');
 const DeviceModes = require(__dirname + '/lib/DeviceModes.js');
 const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
+const MonitorTypes = require(__dirname + '/lib/MonitorTypes.js');
 const warnMessages = {}; // Array to avoid unneeded spam too sentry
 let client, polling, parser;
 
@@ -48,10 +49,10 @@ class Vedirect extends utils.Adapter {
      */
     async onReady() {
         // Initialize your adapter here
+        this.log.info('Starting VE.Direct with Protocol Version 3.32 and configurable expiring state capability');
         this.setState('info.connection', false, true);
 
         try {
-
             // Open Serial port connection
             const USB_Device = this.config.USBDevice;
             const port = new SerialPort(USB_Device, {
@@ -62,7 +63,6 @@ class Vedirect extends utils.Adapter {
                 this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
                 this.setState('info.connection', false, true);
             });
-
 
             // Open pipe and listen to parser to get data
             parser = port.pipe(new Readline({delimiter: '\r\n'}));
@@ -93,199 +93,165 @@ class Vedirect extends utils.Adapter {
             });
 
         } catch (error) {
-            this.log.error('Connection to Vedirect device failed !');
+            this.log.error('Connection to VE.Direct device failed !');
             this.setState('info.connection', false, true);
             this.log.error(error);
-
         }
     }
 
     async parse_serial(line) {
         try {
-
             this.log.debug('Line : ' + line);
             const res = line.split('\t');
             if (stateAttr[res[0]] !== undefined) {
-
-                switch (res[0]) {
-                    case    'CE':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                switch (res[0]) {   // Used for special modifications to write a state with correct values and types
+                    case 'CE':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'V':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'V':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'V2':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'V2':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'V3':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'V3':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'VS':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'VS':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'VM':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'VM':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'DM':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 10), ack: true, expire: 2});
+                    case 'DM':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true)
                         break;
 
-                    case    'VPV':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'VPV':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'I':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'I':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'I2':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'I2':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'I3':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'I3':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'IL':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'IL':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'SOC':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 10), ack: true, expire: 2});
+                    case 'SOC':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true)
                         break;
 
-                    case    'AR':
-                        // this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});
+                    case 'AR':
                         this.stateSetCreate(res[0], res[0], await this.get_alarm_reason(res[1]));
                         break;
 
-                    case    'WARN':
-                        // this.setState(res[0], {val: await this.get_alarm_reason(res[1]), ack: true});
+                    case 'WARN':
                         this.stateSetCreate(res[0], res[0], await this.get_alarm_reason(res[1]));
                         break;
 
-                    case    'OR':
-                        this.setState(res[0], {val: await this.get_off_reason(res[1]), ack: true});
+                    case 'OR':
                         this.stateSetCreate(res[0], res[0], await this.get_off_reason(res[1]));
                         break;
 
-                    case    'H6':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'H6':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'H7':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'H7':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'H8':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'H8':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'H15':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'H15':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'H16':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 1000), ack: true, expire: 2});
+                    case 'H16':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000, true)
                         break;
 
-                    case    'H17':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'H17':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'H18':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'H18':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'H19':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'H19':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'H20':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'H20':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'H22':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'H22':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'ERR':
-                        // this.setState(res[0], {val: await this.get_err_state(res[1]), ack: true});
+                    case 'ERR':
                         this.stateSetCreate(res[0], res[0], await this.get_err_state(res[1]));
                         break;
 
-                    case    'CS':
-                        // this.setState(res[0], {val: await this.get_cs_state(res[1]), ack: true});
+                    case 'CS':
                         this.stateSetCreate(res[0], res[0], await this.get_cs_state(res[1]));
                         break;
 
-                    case    'PID':
-                        // this.setState(res[0], {val: await this.get_product_longname(res[1]), ack: true});
+                    case 'PID':
                         this.stateSetCreate(res[0], res[0], await this.get_product_longname(res[1]));
                         break;
 
-                    case    'MODE':
-                        // this.setState(res[0], {val: await this.get_device_mode(res[1]), ack: true});
+                    case 'MODE':
                         this.stateSetCreate(res[0], res[0], await this.get_device_mode(res[1]));
                         break;
 
-                    case    'AC_OUT_V':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 100), ack: true, expire: 2});
+                    case 'AC_OUT_V':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100, true)
                         break;
 
-                    case    'AC_OUT_I':
-                        // this.setState(res[0], {val: (Math.floor(res[1]) / 10), ack: true, expire: 2});
+                    case 'AC_OUT_I':
                         this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10, true)
                         break;
 
-                    case    'MPPT':
-                        // this.setState(res[0], {val: await this.get_mppt_mode(res[1]), ack: true, expire: 2});
+                    case 'MPPT':
                         this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]), true);
                         break;
 
-                    default  :
-                        this.log.debug('No case matched for ' + res[0]);
-                        // this.setState(res[0], {val: res[1], ack: true});
+                    case 'MON':
+                        this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]), true);
+                        break;
+
+                    default:    // Used for all other measure points with no required special handling
                         this.stateSetCreate(res[0], res[0], res[1]);
+                        break;
                 }
             }
 
 
         } catch (error) {
-            this.log.error('Connection to Vedirect device failed !');
+            this.log.error('Connection to VE.Direct device failed !');
             this.setState('info.connection', false, true);
             this.log.error(error);
-
         }
     }
 
@@ -299,13 +265,13 @@ class Vedirect extends utils.Adapter {
         try {
 
             SerialPort.close();
-            this.log.info('VE.direct Terminated, all USB connections closed');
+            this.log.info('VE.Direct terminated, all USB connections closed');
 
             // Write message in log related to server connection
             client.on('end', () => {
                 this.setState('info.connection', false, true);
                 // Need to add logic for retry / restart
-                this.log.warn('VE.direct : disconnected');
+                this.log.warn('VE.Direct disconnected');
             });
 
             parser.on('error', (error) => {
@@ -315,7 +281,7 @@ class Vedirect extends utils.Adapter {
 
             parser.on('close', () => {
                 this.setState('info.connection', false, true);
-                this.log.warn('VE.direct : disconnected');
+                this.log.warn('VE.Direct disconnected');
             });
             callback();
         } catch (e) {
@@ -329,7 +295,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = ProductNames[pid].pid;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown PID = ' + pid;
         }
         return name;
     }
@@ -339,7 +305,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = AlarmReasons[ar].reason;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown alarm reason = ' + ar;
         }
         return name;
     }
@@ -349,7 +315,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = OffReasons[or].reason;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown off reason = ' + or;
         }
         return name;
     }
@@ -359,7 +325,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = BleReasons[ble].reason;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown BLE reason = '+ ble;
         }
         return name;
     }
@@ -369,7 +335,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = OperationStates[cs].state;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown operation state = ' + cs;
         }
         return name;
     }
@@ -379,7 +345,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = ErrorNames[err].error;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown error state = ' + err;
         }
         return name;
     }
@@ -389,7 +355,7 @@ class Vedirect extends utils.Adapter {
         try {
             name = DeviceModes[mode].mode;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown device mode = ' + mode;
         }
         return name;
     }
@@ -399,7 +365,17 @@ class Vedirect extends utils.Adapter {
         try {
             name = MpptModes[mppt].mode;
         } catch (error) {
-            name = 'unknown';
+            name = 'unknown mppt mode = ' + mppt;
+        }
+        return name;
+    }
+
+    async get_monitor_type(monitortype) {
+        let name;
+        try {
+            name = MonitorTypes[monitortype].type;
+        } catch (error) {
+            name = 'unknown monitor type = ' + monitortype;
         }
         return name;
     }
@@ -408,13 +384,11 @@ class Vedirect extends utils.Adapter {
      * @param stateName {string} ID of the state
      * @param name {string} Name of state (also used for stattAttrlib!)
      * @param value {boolean | number | string | null} Value of the state
-     * @param [expire] {boolean | null} Set state value to NULL when expiration time is reached, default is no expire
      */
-    stateSetCreate(stateName, name, value, expire) {
+    stateSetCreate(stateName, name, value) {
         this.log.debug('[stateSetCreate]' + stateName + ' with value : ' + value);
-
+        let expireTime = 0
         try {
-
             // Try to get details from state lib, if not use defaults. throw warning is states is not known in attribute list
             const common = {};
             if (!stateAttr[name]) {
@@ -426,7 +400,7 @@ class Vedirect extends utils.Adapter {
                 }
             }
             let createStateName = stateName;
-
+            this.log.debug('[stateSetCreate] state attribute from lib ' + JSON.stringify(stateAttr[name]));
             common.name = stateAttr[name] !== undefined ? stateAttr[name].name || name : name;
             common.type = stateAttr[name] !== undefined ? stateAttr[name].type || typeof (value) : typeof (value);
             common.role = stateAttr[name] !== undefined ? stateAttr[name].role || 'state' : 'state';
@@ -434,20 +408,16 @@ class Vedirect extends utils.Adapter {
             common.unit = stateAttr[name] !== undefined ? stateAttr[name].unit || '' : '';
             common.write = stateAttr[name] !== undefined ? stateAttr[name].write || false : false;
 
-            if ((!this.createdStatesDetails[stateName])
-                || (this.createdStatesDetails[stateName]
-                    && (
-                        common.name !== this.createdStatesDetails[stateName].name
-                        || common.name !== this.createdStatesDetails[stateName].name
-                        || common.type !== this.createdStatesDetails[stateName].type
-                        || common.role !== this.createdStatesDetails[stateName].role
-                        || common.read !== this.createdStatesDetails[stateName].read
-                        || common.unit !== this.createdStatesDetails[stateName].unit
-                        || common.write !== this.createdStatesDetails[stateName].write
-                    )
-                )) {
-
-                this.log.debug(`An attribute has changed for : ${stateName}`);
+            if ((!this.createdStatesDetails[stateName]) || (this.createdStatesDetails[stateName] && (
+                    common.name !== this.createdStatesDetails[stateName].name ||
+                    common.name !== this.createdStatesDetails[stateName].name ||
+                    common.type !== this.createdStatesDetails[stateName].type ||
+                    common.role !== this.createdStatesDetails[stateName].role ||
+                    common.read !== this.createdStatesDetails[stateName].read ||
+                    common.unit !== this.createdStatesDetails[stateName].unit ||
+                    common.write !== this.createdStatesDetails[stateName].write)
+            )) {
+                this.log.debug(`[stateSetCreate] An attribute has changed for : ${stateName}`);
 
                 this.extendObject(createStateName, {
                     type: 'state',
@@ -455,7 +425,7 @@ class Vedirect extends utils.Adapter {
                 });
 
             } else {
-                this.log.debug(`No attribute changes for : ${stateName}, processing normallly`);
+                this.log.debug(`[stateSetCreate] No attribute changes for : ${stateName}, processing normally`);
             }
 
             // Store current object definition to memory
@@ -465,20 +435,30 @@ class Vedirect extends utils.Adapter {
             if (value !== null && value !== undefined) {
                 let expireTime = 0;
                 // Check if state should expire and expiration of states is active in config, if yes use preferred time
-                if (expireTime && this.config.expireTime) {
-                    expireTime = Number(this.config.expireTime);
+                if (this.config.expireTime !== undefined){
+                    if (stateAttr[name].expire !== undefined){
+                        if (stateAttr[name].expire === true) {
+                            expireTime = Number(this.config.expireTime);
+                        }
+                        if (stateAttr[name].expire === false){
+                            expireTime = 0;
+                        }
+                    }
                 }
 
+                if (common.type === 'number') {
+                    value = parseFloat(value, 10);
+                }
                 this.setStateChanged(createStateName, {
                     val: value,
                     ack: true,
-                    expire: expireTime,
+                    expire: expireTime
                 });
             }
 
             // Subscribe on state changes if writable
             common.write && this.subscribeStates(createStateName);
-
+            this.log.debug('[stateSetCreate] All createdStatesDetails' + JSON.stringify(this.createdStatesDetails));
         } catch (error) {
             this.sendSentry(`[stateSetCreate] ${error}`)
         }
