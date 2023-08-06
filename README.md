@@ -18,21 +18,16 @@ Read VE.direct data from a Victron device with vedirect connector over USB <-> s
 
 Set the proper device (example /dev/ttyUSB0) in adapter config.
 
-# Changelog
+## Changelog
 <!--
     Placeholder for the next version (at the beginning of the line):
     ## __WORK IN PROGRESS__
 -->
-### 0.2.0-alpha.1 (2023-08-06) - Implement protocol Version 3.32
-* (DutchmanNL) Optimise code
-* (Andiling) Add new product names of Vedirect
-<<<<<<< Updated upstream
-* (Andiling) Add option to admin for state expiration
-
-=======
-* (Andiling) Add option to admin for state expiration
-
->>>>>>> Stashed changes
+### __WORK IN PROGRESS__ - Implement protocol Version 3.32
+* (DutchmanNL) Code optimization
+* ([Andiling](https://github.com/andiling)) Add new product names of Vedirect
+* ([Andiling](https://github.com/andiling)) Add option to admin for state expiration
+* (DutchmanNL) Update dependencies * testing for NodeJS 18/20
 
 ### 0.1.2 (2020-10-06)
 * (DutchmanNL) Fix sentry issue, error in opening USB-Port
@@ -41,10 +36,10 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 * (DutchmanNL) Set state to NULL if no data received within 2 seconds.
 
 ### 0.1.0
-* (Andiling) error in device modes corrected
+* ([Andiling](https://github.com/andiling)) error in device modes corrected
 
 ### 0.0.9
-* (Andiling) improve state attributes
+* ([Andiling](https://github.com/andiling)) improve state attributes
 
 ### 0.0.8
 * (DutchmanNL) set connection state to false when no data received for 10 seconds
@@ -52,7 +47,7 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 * (DutchmanNL & Andiling) Update state attributes
 
 ### 0.0.7
-* (DutchmanNL & Andiling) Alpha release
+* (DutchmanNL & [Andiling](https://github.com/andiling)) Alpha release
 
 ## License
 MIT License
