@@ -23,7 +23,7 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
     Placeholder for the next version (at the beginning of the line):
     ## __WORK IN PROGRESS__
 -->
-### __WORK IN PROGRESS__ - Implement protocol Version 3.32
+### 0.2.0-alpha.1 (2023-08-06) - Implement protocol Version 3.32
 * (DutchmanNL) Optimise code
 * (Andiling) Add new product names of Vedirect
 <<<<<<< Updated upstream
@@ -33,6 +33,7 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 * (Andiling) Add option to admin for state expiration
 
 >>>>>>> Stashed changes
+
 ### 0.1.2 (2020-10-06)
 * (DutchmanNL) Fix sentry issue, error in opening USB-Port
 
