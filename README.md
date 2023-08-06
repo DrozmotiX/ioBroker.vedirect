@@ -24,11 +24,10 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
     ## __WORK IN PROGRESS__
 -->
 
-### __WORK IN PROGRESS__
+### __WORK IN PROGRESS__ - Implement protocol Version 3.32
 * (DutchmanNL) Optimise code
-* (DutchmanNL) Do not write objects unneeded
 * (Andiling) Add new product names of Vedirect
-* (DutchmanNL) Add option to admin for state expiration
+* (Andiling) Add option to admin for state expiration
 
 ### 0.1.2 (2020-10-06)
 * (DutchmanNL) Fix sentry issue, error in opening USB-Port
@@ -53,7 +52,7 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 ## License
 MIT License
 
-Copyright (c) 2021 DutchmanNL <rdrozda@hotmail.com>
+Copyright (c) 2023 DutchmanNL <oss@drozmotix.eu>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

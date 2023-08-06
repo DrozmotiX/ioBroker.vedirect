@@ -432,11 +432,11 @@ class Vedirect extends utils.Adapter {
 			this.createdStatesDetails[stateName] = common;
 
 			// Set value to state including expiration time
-			if (value !== null && value !== undefined) {
+			if (value != null) {
 				let expireTime = 0;
 				// Check if state should expire and expiration of states is active in config, if yes use preferred time
-				if (this.config.expireTime !== undefined){
-					if (stateAttr[name].expire !== undefined){
+				if (this.config.expireTime != null){
+					if (stateAttr[name].expire != null){
 						if (stateAttr[name].expire === true) {
 							expireTime = Number(this.config.expireTime);
 						}
@@ -447,7 +447,7 @@ class Vedirect extends utils.Adapter {
 				}
 
 				if (common.type === 'number') {
-					value = parseFloat(value, 10);
+					value = parseFloat(value);
 				}
 				this.setStateChanged(createStateName, {
 					val: value,
