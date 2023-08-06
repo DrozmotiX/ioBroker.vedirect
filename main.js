@@ -10,7 +10,6 @@
 const utils = require('@iobroker/adapter-core');
 // Load your modules here, e.g.:
 const {SerialPort, ReadlineParser} = require('serialport');
-const Readline = require('@serialport/parser-readline');
 const stateAttr = require(__dirname + '/lib/stateAttr.js');
 const ProductNames = require(__dirname + '/lib/ProductNames.js');
 const ErrorNames = require(__dirname + '/lib/ErrorNames.js');
@@ -22,7 +21,7 @@ const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
 const MonitorTypes = require(__dirname + '/lib/MonitorTypes.js');
 const warnMessages = {}; // Array to avoid unneeded spam too sentry
-let client, polling;
+let client, polling, port;
 
 const disableSentry = true; // Ensure to set to true during development !
 
@@ -55,7 +54,7 @@ class Vedirect extends utils.Adapter {
 		try {
 			// Open Serial port connection
 			const USB_Device = this.config.USBDevice;
-			const port = new SerialPort({
+			port = new SerialPort({
 				path: USB_Device,
 				baudRate: 19200
 			});
@@ -265,7 +264,7 @@ class Vedirect extends utils.Adapter {
 		this.setState('info.connection', false, true);
 		try {
 
-			SerialPort.close();
+			port.close();
 			this.log.info('VE.Direct terminated, all USB connections closed');
 
 			// Write message in log related to server connection
@@ -275,15 +274,6 @@ class Vedirect extends utils.Adapter {
 				this.log.warn('VE.Direct disconnected');
 			});
 
-			parser.on('error', (error) => {
-				this.setState('info.connection', false, true);
-				this.log.error('Issue handling serial port connection : ' + JSON.stringify(error));
-			});
-
-			parser.on('close', () => {
-				this.setState('info.connection', false, true);
-				this.log.warn('VE.Direct disconnected');
-			});
 			callback();
 		} catch (e) {
 			callback();
