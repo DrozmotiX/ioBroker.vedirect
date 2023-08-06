@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vedirect",
-    "version": "0.2.0-alpha.1",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Code optimization\n([Andiling](https://github.com/andiling)) Add new product names of Vedirect\n([Andiling](https://github.com/andiling)) Add option to admin for state expiration\nUpdate dependencies * testing for NodeJS 18/20",
+        "de": "Codeoptimierung\n[Andiling](https://github.com/andiling) Neue Produktnamen von Vedirect hinzufügen\n[Andiling](https://github.com/andiling) Fügen Sie die Option zu admin für State Exiration\nUpdate-Abhängigkeiten * Test auf NodeJS 18/20",
+        "ru": "Оптимизация кода\n[Andiling](https://github.com/andiling) Добавить новые названия продуктов Vedirect\n[Andiling](https://github.com/andiling) Добавьте опцию в админ для истечения срока действия государства\nОбновить зависимости * тестирование для NodeJS 18/20",
+        "pt": "Otimização de código\n[Andiling] (https://github.com/andiling) Adicionar novos nomes de produtos de Vedirect\n[Andiling] (https://github.com/andiling) Adicionar opção para admin para expiração do estado\nDependências de atualização * testes para NodeJS 18/20",
+        "nl": "Code optimulatie\n_ Voeg nieuwe productnamen toe van Verig\n_ Voeg de optie toe voor verval\nQuality over Quantity (QoQ) Releases Vertaling:",
+        "fr": "Optimisation du code\n[Andiling](https://github.com/andiling) Ajouter de nouveaux noms de produits de Vedirect\n[Andiling](https://github.com/andiling) Ajouter l'option d'administration pour l'expiration de l'état\nMise à jour des dépendances * tests pour NodeJS 18/20",
+        "it": "Ottimizzazione del codice\n[Andiling](https://github.com/andiling) Aggiungi nuovi nomi di prodotto di Vedirect\n[Andiling](https://github.com/andiling) Aggiungi l'opzione per admin per la scadenza dello stato\nAggiornamento dipendenze * test per NodeJS 18/20",
+        "es": "Optimización del código\n[Andiling](https://github.com/andiling) Añadir nuevos nombres de productos de Vedirect\n[Andiling](https://github.com/andiling) Añadir opción a admin para caducidad del estado\nActualizar las dependencias * pruebas para NodeJS 18/20",
+        "pl": "Optymalizacja kodu\n(Andiling) (ang.). Nowe nazwy produktów\n(Andiling) (ang.). Addd option for admin for the state expiration (ang.)\nRezultatem programu jest NodeJS 18/2018",
+        "uk": "Оптимізація коду\n[Антилінг](https://github.com/andiling) Додати нові імена продуктів Vedirect\n[Антилінг](https://github.com/andiling) Додати параметр до адміністратора для закінчення терміну дії держави\nОновлення залежностей * тестування на NodeJS 18/20",
+        "zh-cn": "守则的优化\n[导言](http://github.com/andiling) 新产品名称\n[导言](http://github.com/andiling) 增加国家到期期的专注\n最新受扶养人* 无助于18/20"
+      },
       "0.1.2": {
         "en": "Fix sentry issue, error in opening USB-Port",
         "de": "Behebung des Wachproblems, Fehler beim Öffnen des USB-Anschlusses",
