@@ -122,6 +122,8 @@
         "mode": "daemon",
         "type": "energy",
         "compact": true,
+        "connectionType": "local",
+        "dataSource": "push",
         "materialize": true,
         "plugins": {
             "sentry": {
