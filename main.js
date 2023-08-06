@@ -95,7 +95,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			this.log.error('Connection to VE.Direct device failed !');
 			this.setState('info.connection', false, true);
-			this.log.error(error);
+			this.errorHandler(error);
 		}
 	}
 
@@ -251,7 +251,7 @@ class Vedirect extends utils.Adapter {
 		} catch (error) {
 			this.log.error('Connection to VE.Direct device failed !');
 			this.setState('info.connection', false, true);
-			this.log.error(error);
+			this.errorHandler(error);
 		}
 	}
 
@@ -387,7 +387,7 @@ class Vedirect extends utils.Adapter {
      */
 	stateSetCreate(stateName, name, value) {
 		this.log.debug('[stateSetCreate]' + stateName + ' with value : ' + value);
-		const expireTime = 0;
+		// const expireTime = 0;
 		try {
 			// Try to get details from state lib, if not use defaults. throw warning is states is not known in attribute list
 			const common = {};
@@ -461,6 +461,18 @@ class Vedirect extends utils.Adapter {
 			this.log.debug('[stateSetCreate] All createdStatesDetails' + JSON.stringify(this.createdStatesDetails));
 		} catch (error) {
 			this.sendSentry(`[stateSetCreate] ${error}`);
+		}
+	}
+
+	errorHandler(source, error, debugMode) {
+		let message = error;
+		if (error instanceof Error && error.stack != null) message = error.stack;
+		if (!debugMode) {
+			this.log.error(`${source} ${error}`);
+			this.sendSentry(`${message}`);
+		} else {
+			this.log.error(`${source} ${error}`);
+			this.log.debug(`${source} ${message}`);
 		}
 	}
 
