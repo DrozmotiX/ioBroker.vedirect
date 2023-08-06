@@ -9,7 +9,7 @@
 // you need to create an adapter
 const utils = require('@iobroker/adapter-core');
 // Load your modules here, e.g.:
-const SerialPort = require('serialport');
+const {SerialPort, ReadlineParser} = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const stateAttr = require(__dirname + '/lib/stateAttr.js');
 const ProductNames = require(__dirname + '/lib/ProductNames.js');
@@ -22,7 +22,7 @@ const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
 const MonitorTypes = require(__dirname + '/lib/MonitorTypes.js');
 const warnMessages = {}; // Array to avoid unneeded spam too sentry
-let client, polling, parser;
+let client, polling;
 
 const disableSentry = true; // Ensure to set to true during development !
 
@@ -55,7 +55,8 @@ class Vedirect extends utils.Adapter {
 		try {
 			// Open Serial port connection
 			const USB_Device = this.config.USBDevice;
-			const port = new SerialPort(USB_Device, {
+			const port = new SerialPort({
+				path: USB_Device,
 				baudRate: 19200
 			});
 
@@ -65,7 +66,7 @@ class Vedirect extends utils.Adapter {
 			});
 
 			// Open pipe and listen to parser to get data
-			parser = port.pipe(new Readline({delimiter: '\r\n'}));
+			const parser = port.pipe(new ReadlineParser({delimiter: '\r\n'}));
 
 			parser.on('data', (data) => {
 				this.parse_serial(data);
