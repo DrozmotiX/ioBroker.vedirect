@@ -21,7 +21,7 @@ const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
 const MonitorTypes = require(__dirname + '/lib/MonitorTypes.js');
 const warnMessages = {}; // Array to avoid unneeded spam too sentry
-let client, polling, port;
+let polling, port;
 
 const disableSentry = true; // Ensure to set to true during development !
 
@@ -266,13 +266,6 @@ class Vedirect extends utils.Adapter {
 
 			port.close();
 			this.log.info('VE.Direct terminated, all USB connections closed');
-
-			// Write message in log related to server connection
-			client.on('end', () => {
-				this.setState('info.connection', false, true);
-				// Need to add logic for retry / restart
-				this.log.warn('VE.Direct disconnected');
-			});
 
 			callback();
 		} catch (e) {
