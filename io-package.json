@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "vedirect",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "news": {
+      "0.3.0": {
+        "en": "Bugfixes\n([Andiling](https://github.com/andiling)) Update to support Protocol Version 3.33",
+        "de": "Bugfixes\n[Andiling](https://github.com/andiling) Unterstützung für Protokollversion 3.33",
+        "ru": "Бугфиксы\n[Andiling](https://github.com/andiling) Обновление для поддержки версии протокола 3.33",
+        "pt": "Bugfixs\n[Andiling] (https://github.com/andiling) Atualização para suporte Protocolo Versão 3.33",
+        "nl": "Bugfix\n_ Update om Protocol Version 3.33",
+        "fr": "Bugfixes\n[Andiling](https://github.com/andiling) Mise à jour pour appuyer la version 3.33 du Protocole",
+        "it": "Bugfix\n[Andiling](https://github.com/andiling) Aggiornamento al supporto Protocollo Versione 3.33",
+        "es": "Bugfixes\n[Andiling](https://github.com/andiling) Update to support Protocol Version 3.33",
+        "pl": "Bugfix\n(Andiling) (ang.). Użycie wersji 3.33",
+        "uk": "Помилки\n[Антилінг](https://github.com/andiling) Оновлення для підтримки протоколу Версія 3.33",
+        "zh-cn": "Bugfix\n[导言](http://github.com/andiling) 支助议定书的更新333"
+      },
       "0.2.0": {
         "en": "Code optimization\n([Andiling](https://github.com/andiling)) Add new product names of Vedirect\n([Andiling](https://github.com/andiling)) Add option to admin for state expiration\nUpdate dependencies * testing for NodeJS 18/20",
         "de": "Codeoptimierung\n[Andiling](https://github.com/andiling) Neue Produktnamen von Vedirect hinzufügen\n[Andiling](https://github.com/andiling) Fügen Sie die Option zu admin für State Exiration\nUpdate-Abhängigkeiten * Test auf NodeJS 18/20",
@@ -75,18 +88,6 @@
         "es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
         "pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
         "zh-cn": "支持器连接状态处理，丢失时重新连接"
-      },
-      "0.0.7": {
-        "en": "Alpha release",
-        "de": "Alpha-Version",
-        "ru": "Альфа-релиз",
-        "pt": "Liberação alfa",
-        "nl": "Alpha release",
-        "fr": "Libération alpha",
-        "it": "Rilascio alfa",
-        "es": "Lanzamiento alfa",
-        "pl": "Wersja alfa",
-        "zh-cn": "阿尔法释放"
       }
     },
     "title": "Vedirect",
