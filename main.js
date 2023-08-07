@@ -2,7 +2,7 @@
 
 /*
  * Created with @iobroker/create-adapter v1.16.0
-   VE.Direct Protocol Version 3.32 from 30. June 2021
+   VE.Direct Protocol Version 3.33 from 6. June 2023
  */
 
 // The adapter-core module gives you access to the core ioBroker functions
@@ -48,7 +48,7 @@ class Vedirect extends utils.Adapter {
      */
 	async onReady() {
 		// Initialize your adapter here
-		this.log.info('Starting VE.Direct with Protocol Version 3.32 and configurable expiring state capability');
+		this.log.info('Starting VE.Direct with Protocol Version 3.33 and configurable expiring state capability');
 		this.setState('info.connection', false, true);
 
 		try {
@@ -240,7 +240,19 @@ class Vedirect extends utils.Adapter {
 					case 'MON':
 						this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]));
 						break;
+					
+					case 'DC_IN_V':
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
+						break;
 
+					case 'DC_IN_I':
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
+						break;
+
+					case 'DC_IN_P':
+						this.stateSetCreate(res[0], res[0], Math.floor(res[1]));
+						break;
+	
 					default:    // Used for all other measure points with no required special handling
 						this.stateSetCreate(res[0], res[0], res[1]);
 						break;
