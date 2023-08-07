@@ -21,8 +21,12 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 ## Changelog
 <!--
     Placeholder for the next version (at the beginning of the line):
-    ## __WORK IN PROGRESS__
+    ### __WORK IN PROGRESS__
 -->
+### __WORK IN PROGRESS__ - Support Protocol Version 3.33
+* (DutchmanNL) Bugfixes
+* ([Andiling](https://github.com/andiling)) Update to support Protocol Version 3.33
+
 ### 0.2.0 (2023-08-06) - Implement protocol Version 3.32
 * (DutchmanNL) Code optimization
 * ([Andiling](https://github.com/andiling)) Add new product names of Vedirect
