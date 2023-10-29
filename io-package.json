@@ -3,7 +3,7 @@
         "name": "vedirect",
         "version": "0.3.1",
         "news": {
-            "0.3.1": {
+            "0.3.2": {
                 "en": "Message buffer implemented to avoid system overload",
                 "de": "Nachrichtenpuffer implementiert, um Systemüberlastung zu vermeiden",
                 "ru": "Буфер сообщений реализован во избежание перегрузки системы.",
