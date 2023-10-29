@@ -1,0 +1,8 @@
+{
+    "Buffer messages in seconds to avoid system overload": "在几秒钟内缓冲消息以避免系统过载",
+    "Leave empty or 0 to not expire states": "留空或 0 表示不过期状态",
+    "Please choose your preferred settings": "请选择您喜欢的设置",
+    "USBDevice": "USB设备端口",
+    "expireTime": "状态的过期时间（以秒为单位）",
+    "messageBuffer": "以秒为单位进行缓冲以忽略消息"
+}

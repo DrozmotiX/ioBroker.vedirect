@@ -1,0 +1,8 @@
+{
+    "Buffer messages in seconds to avoid system overload": "Buffer berichten binnen enkele seconden om systeemoverbelasting te voorkomen",
+    "Leave empty or 0 to not expire states": "Laat leeg of 0 om de status niet te laten verlopen",
+    "Please choose your preferred settings": "Kies uw voorkeursinstellingen",
+    "USBDevice": "USB-apparaatpoort",
+    "expireTime": "Vervaltijd van staten in seconden",
+    "messageBuffer": "Buffer in seconden om berichten te negeren"
+}

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.vedirect",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Read VE.direct data from Victron devices",
   "author": {
     "name": "DutchmanNL",
@@ -64,7 +64,8 @@
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:js && npm run test:package",
     "lint": "eslint",
-    "release": "release-script"
+    "release": "release-script",
+    "translate": "translate-adapter"
   },
   "bugs": {
     "url": "https://github.com/DrozmotiX/ioBroker.vedirect/issues"

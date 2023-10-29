@@ -1,0 +1,8 @@
+{
+    "Buffer messages in seconds to avoid system overload": "Буферизация сообщений за считанные секунды, чтобы избежать перегрузки системы.",
+    "Leave empty or 0 to not expire states": "Оставьте пустым или 0, чтобы состояния не истекали.",
+    "Please choose your preferred settings": "Пожалуйста, выберите предпочитаемые настройки",
+    "USBDevice": "Порт USB-устройства",
+    "expireTime": "Время истечения состояний в секундах",
+    "messageBuffer": "Буфер в секундах для игнорирования сообщений"
+}

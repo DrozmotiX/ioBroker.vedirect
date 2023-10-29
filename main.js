@@ -21,6 +21,8 @@ const MpptModes = require(__dirname + '/lib/MpptModes.js');
 const BleReasons = require(__dirname + '/lib/BleReasons.js');
 const MonitorTypes = require(__dirname + '/lib/MonitorTypes.js');
 const warnMessages = {}; // Array to avoid unneeded spam too sentry
+let bufferMessage = false;
+const timeouts = {};
 let polling, port;
 
 const disableSentry = true; // Ensure to set to true during development !
@@ -68,7 +70,18 @@ class Vedirect extends utils.Adapter {
 			const parser = port.pipe(new ReadlineParser({delimiter: '\r\n'}));
 
 			parser.on('data', (data) => {
-				this.parse_serial(data);
+
+				if (!bufferMessage) {
+					this.parse_serial(data);
+					if (this.config.messageBuffer > 0) {
+						bufferMessage = true;
+						if (timeouts['mesageBuffer']) {clearTimeout(timeouts['mesageBuffer']); timeouts['mesageBuffer'] = null;}
+						timeouts['mesageBuffer'] = setTimeout(()=> {
+							bufferMessage = false;
+						}, this.config.messageBuffer * 1000);
+					}
+				}
+
 				// Indicate connection status
 				this.setState('info.connection', true, true);
 				// Clear running timer
@@ -278,6 +291,7 @@ class Vedirect extends utils.Adapter {
 
 			port.close();
 			this.log.info('VE.Direct terminated, all USB connections closed');
+			if (timeouts['mesageBuffer']) {clearTimeout(timeouts['mesageBuffer']); timeouts['mesageBuffer'] = null;}
 
 			callback();
 		} catch (e) {

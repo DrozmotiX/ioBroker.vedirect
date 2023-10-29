@@ -1,0 +1,8 @@
+{
+    "Buffer messages in seconds to avoid system overload": "Mensagens de buffer em segundos para evitar sobrecarga do sistema",
+    "Leave empty or 0 to not expire states": "Deixe em branco ou 0 para não expirar os estados",
+    "Please choose your preferred settings": "Escolha suas configurações preferidas",
+    "USBDevice": "Porta do dispositivo USB",
+    "expireTime": "Tempo de expiração dos estados em segundos",
+    "messageBuffer": "Buffer em segundos para ignorar mensagens"
+}
