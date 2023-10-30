@@ -70,16 +70,21 @@ class Vedirect extends utils.Adapter {
 			const parser = port.pipe(new ReadlineParser({delimiter: '\r\n'}));
 
 			parser.on('data', (data) => {
-
+				this.log.debug(`[Serial data received] ${data}`)
 				if (!bufferMessage) {
+					this.log.debug(`Message buffer inactive, processing data`);
 					this.parse_serial(data);
 					if (this.config.messageBuffer > 0) {
+						this.log.debug(`Activate Message buffer with delay of ${this.config.messageBuffer * 1000}`);
 						bufferMessage = true;
 						if (timeouts['mesageBuffer']) {clearTimeout(timeouts['mesageBuffer']); timeouts['mesageBuffer'] = null;}
 						timeouts['mesageBuffer'] = setTimeout(()=> {
 							bufferMessage = false;
+							this.log.debug(`Message buffer timeout reached, will process data`);
 						}, this.config.messageBuffer * 1000);
 					}
+				} else {
+					this.log.debug(`Message buffer active, message ignored`);
 				}
 
 				// Indicate connection status
@@ -253,7 +258,7 @@ class Vedirect extends utils.Adapter {
 					case 'MON':
 						this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]));
 						break;
-					
+
 					case 'DC_IN_V':
 						this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
 						break;
@@ -265,7 +270,7 @@ class Vedirect extends utils.Adapter {
 					case 'DC_IN_P':
 						this.stateSetCreate(res[0], res[0], Math.floor(res[1]));
 						break;
-	
+
 					default:    // Used for all other measure points with no required special handling
 						this.stateSetCreate(res[0], res[0], res[1]);
 						break;

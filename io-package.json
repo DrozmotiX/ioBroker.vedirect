@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "vedirect",
-        "version": "0.3.1",
+        "version": "0.3.3",
         "news": {
             "0.3.2": {
                 "en": "Message buffer implemented to avoid system overload",
