@@ -3,17 +3,18 @@
         "name": "vedirect",
         "version": "0.3.3",
         "news": {
-            "0.3.2": {
-                "en": "Message buffer implemented to avoid system overload",
-                "de": "Nachrichtenpuffer implementiert, um Systemüberlastung zu vermeiden",
-                "ru": "Буфер сообщений реализован во избежание перегрузки системы.",
-                "pt": "Buffer de mensagens implementado para evitar sobrecarga do sistema",
-                "nl": "Berichtbuffer geïmplementeerd om overbelasting van het systeem te voorkomen",
-                "fr": "Tampon de messages implémenté pour éviter la surcharge du système",
-                "it": "Buffer dei messaggi implementato per evitare il sovraccarico del sistema",
-                "es": "Búfer de mensajes implementado para evitar la sobrecarga del sistema.",
-                "pl": "Zaimplementowano bufor komunikatów, aby uniknąć przeciążenia systemu",
-                "zh-cn": "实现消息缓冲区以避免系统过载"
+            "0.3.3": {
+                "en": "Repository checker compliance updates, dependencies updated for Node.js 18+ compatibility",
+                "de": "Repository Checker Compliance-Updates, Abhängigkeiten für Node.js 18+ Kompatibilität aktualisiert",
+                "ru": "Обновления соответствия средства проверки репозитория, зависимости обновлены для совместимости с Node.js 18+",
+                "pt": "Atualizações de conformidade do verificador de repositório, dependências atualizadas para compatibilidade Node.js 18+",
+                "nl": "Repository checker compliance updates, afhankelijkheden bijgewerkt voor Node.js 18+ compatibiliteit",
+                "fr": "Mises à jour de conformité du vérificateur de référentiel, dépendances mises à jour pour la compatibilité Node.js 18+",
+                "it": "Aggiornamenti di conformità del verificatore del repository, dipendenze aggiornate per la compatibilità Node.js 18+",
+                "es": "Actualizaciones de cumplimiento del comprobador de repositorio, dependencias actualizadas para compatibilidad Node.js 18+",
+                "pl": "Aktualizacje zgodności sprawdzarki repozytorium, zaktualizowane zależności dla zgodności Node.js 18+",
+                "uk": "Оновлення відповідності перевірки репозиторію, залежності оновлені для сумісності з Node.js 18+",
+                "zh-cn": "存储库检查器合规性更新，为Node.js 18+兼容性更新了依赖项"
             },
             "0.3.0": {
                 "en": "Bugfixes\n([Andiling](https://github.com/andiling)) Update to support Protocol Version 3.33",
@@ -53,18 +54,6 @@
                 "pl": "Napraw problem z działkiem, błąd podczas otwierania portu USB",
                 "zh-cn": "修复哨兵问题，打开USB端口时出错"
             },
-            "0.1.1": {
-                "en": "Set state to NULL if no data received within 2 seconds.",
-                "de": "Setzen Status auf NULL, wenn innerhalb von 2 Sekunden keine Daten empfangen wurden.",
-                "ru": "Установите состояние в NULL, если данные не получены в течение 2 секунд.",
-                "pt": "Defina o estado como NULL se nenhum dado for recebido dentro de 2 segundos.",
-                "nl": "Zet de status op NULL als er binnen 2 seconden geen gegevens zijn ontvangen.",
-                "fr": "Définissez l'état sur NULL si aucune donnée n'est reçue dans les 2 secondes.",
-                "it": "Impostare lo stato su NULL se non vengono ricevuti dati entro 2 secondi.",
-                "es": "Establezca el estado en NULL si no recibe datos en 2 segundos.",
-                "pl": "Ustaw stan na NULL, jeśli nie otrzymano danych w ciągu 2 sekund.",
-                "zh-cn": "如果2秒钟内未收到数据，则将状态设置为NULL。"
-            },
             "0.1.0": {
                 "en": "error in device mode corrected",
                 "de": "Fehler im Gerätemodus behoben",
@@ -76,18 +65,6 @@
                 "es": "error en modo dispositivo corregido",
                 "pl": "poprawiony błąd w trybie urządzenia",
                 "zh-cn": "设备模式下的错误已更正"
-            },
-            "0.0.9": {
-                "en": "improve state attributes",
-                "de": "Zustandsattribute verbessern",
-                "ru": "улучшить состояние атрибутов",
-                "pt": "melhorar atributos de estado",
-                "nl": "verbetering van attributen van de staat",
-                "fr": "améliorer les attributs d'état",
-                "it": "migliorare gli attributi di stato",
-                "es": "mejorar los atributos de estado",
-                "pl": "poprawić atrybuty stanu",
-                "zh-cn": "改善状态属性"
             },
             "0.0.8": {
                 "en": "Propper connection state handling and reconnect when lost",
@@ -102,7 +79,6 @@
                 "zh-cn": "支持器连接状态处理，丢失时重新连接"
             }
         },
-        "title": "Vedirect",
         "titleLang": {
             "en": "Vedirect",
             "de": "Vedirect",
@@ -113,6 +89,7 @@
             "it": "Vedirect",
             "es": "Vedirecto",
             "pl": "Vedirect",
+            "uk": "Vedirect",
             "zh-cn": "Vedirect"
         },
         "desc": {
@@ -125,6 +102,7 @@
             "it": "Leggi i dati VE.direct dai caricatori solari Victron",
             "es": "Lea los datos VE.direct de los cargadores solares Victron",
             "pl": "Odczytaj dane VE.direct z ładowarki słonecznej Victron",
+            "uk": "Читайте дані VE.direct з Victron Solar Chargers",
             "zh-cn": "从Victron太阳能充电器读取VE.direct数据"
         },
         "authors": [
@@ -137,9 +115,11 @@
             "solar",
             "victron"
         ],
-        "license": "MIT",
+        "licenseInformation": {
+            "license": "MIT",
+            "type": "free"
+        },
         "platform": "Javascript/Node.js",
-        "main": "main.js",
         "icon": "vedirect.png",
         "enabled": true,
         "extIcon": "https://raw.githubusercontent.com/DrozmotiX/ioBroker.vedirect/master/admin/vedirect.png",
@@ -147,10 +127,13 @@
         "loglevel": "info",
         "mode": "daemon",
         "type": "energy",
+        "tier": 3,
         "compact": true,
         "connectionType": "local",
         "dataSource": "push",
-        "materialize": true,
+        "adminUI": {
+            "config": "materialize"
+        },
         "plugins": {
             "sentry": {
                 "dsn": "https://794122c799494668aaf5f1c341dfd1c6@sentry.iobroker.net/29"
@@ -158,7 +141,12 @@
         },
         "dependencies": [
             {
-                "js-controller": ">=1.4.2"
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.6.17"
             }
         ]
     },
