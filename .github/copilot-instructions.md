@@ -12,18 +12,18 @@ Always reference these instructions first and fallback to search or bash command
 - USB-to-serial cable or direct USB connection
 
 ### Bootstrap and Development Setup
-- `npm install` -- NEVER CANCEL: Takes 24 seconds to complete. Set timeout to 60+ minutes.
-- `npm run lint` -- Runs ESLint validation. Instant execution.
-- `npm run test:package` -- Validates package.json and io-package.json files. Takes ~20ms.
-- `npm run test:integration` -- NEVER CANCEL: Takes 24 seconds. Starts full ioBroker test instance. Set timeout to 90+ minutes.
-- `npx tsc --noEmit` -- Type checking (has some non-blocking errors). Takes ~5 seconds.
+- `npm install` -- NEVER CANCEL: Takes 23 seconds to complete. Set timeout to 60+ minutes.
+- `npm run lint` -- Runs ESLint validation. Takes ~0.3 seconds.
+- `npm run test:package` -- Validates package.json and io-package.json files. Takes ~18ms, shows 40 passing tests.
+- `npm run test:integration` -- NEVER CANCEL: Takes 26-47 seconds. Starts full ioBroker test instance. Set timeout to 90+ minutes.
+- `npx tsc --noEmit` -- Type checking (has 7 non-blocking type errors). Takes ~3.8 seconds.
 
 ### Testing and Validation
-- `npm test` -- Attempts to run full test suite but uses deprecated mocha.opts configuration (fails)
-- `npm run test:js` -- Also fails due to deprecated mocha.opts configuration
-- `npm run test:package` -- Package validation (always works)
+- `npm test` -- Attempts to run full test suite but uses deprecated mocha.opts configuration (fails with deprecation error)
+- `npm run test:js` -- Also fails due to deprecated mocha.opts configuration (same error as npm test)
+- `npm run test:package` -- Package validation (always works, shows 40 passing tests in ~18ms)
 - `npm run test:unit` -- Deprecated unit tests (runs but shows deprecation warning)
-- `npm run test:integration` -- NEVER CANCEL: Full integration test that starts adapter in test environment
+- `npm run test:integration` -- NEVER CANCEL: Full integration test that starts adapter in test environment (takes 26-47 seconds)
 
 ### Build and Release Tasks  
 - `npx gulp` -- Runs default gulp tasks (updatePackages, updateReadme)
@@ -40,11 +40,11 @@ Always reference these instructions first and fallback to search or bash command
 - For hardware testing, configure USB device path in admin interface (e.g., `/dev/ttyUSB0`)
 
 ### Expected Test Results
-- Integration test should show: "The adapter starts successfully" and "1 passing (24s)"
+- Integration test should show: "The adapter starts successfully" and "1 passing (26-47s)"
 - Connection errors "TypeError: 'path' is not defined" are EXPECTED without hardware
-- Package validation should show "38 passing (18ms)"
+- Package validation should show "40 passing (18ms)"
 - Linting should complete with no errors (takes ~0.3 seconds)
-- TypeScript checking shows 16 type errors but exits with code 2 - this is non-blocking
+- TypeScript checking shows 7 type errors but exits with code 2 - this is non-blocking
 
 ### CI/CD Validation
 - Always run `npm run lint` before committing or the GitHub Actions (.github/workflows/test-and-release.yml) will fail
@@ -148,11 +148,11 @@ Repository Root:
 ## Performance and Timing
 
 ### Operation Timings (Set Appropriate Timeouts)
-- npm install: 24 seconds - Set timeout to 60+ minutes, NEVER CANCEL
-- Integration tests: 24 seconds - NEVER CANCEL, set timeout to 90+ minutes  
+- npm install: 23 seconds - Set timeout to 60+ minutes, NEVER CANCEL
+- Integration tests: 26-47 seconds - NEVER CANCEL, set timeout to 90+ minutes  
 - Package validation: 18ms (under 1 second) - Set timeout to 30+ minutes
 - Linting: 0.3 seconds - Set timeout to 30+ minutes
-- Type checking: 3.6 seconds - Set timeout to 30+ minutes
+- Type checking: 3.8 seconds - Set timeout to 30+ minutes
 
 ### Runtime Performance
 - Serial data processing is real-time with configurable message buffering
