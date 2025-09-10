@@ -119,7 +119,6 @@
             "license": "MIT",
             "type": "free"
         },
-        "license": "MIT",
         "platform": "Javascript/Node.js",
         "icon": "vedirect.png",
         "enabled": true,
