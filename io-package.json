@@ -52,7 +52,8 @@
                 "it": "Risolto il problema della sentinella, errore nell'apertura della porta USB",
                 "es": "Solucionar problema de centinela, error al abrir el puerto USB",
                 "pl": "Napraw problem z działkiem, błąd podczas otwierania portu USB",
-                "zh-cn": "修复哨兵问题，打开USB端口时出错"
+                "zh-cn": "修复哨兵问题，打开USB端口时出错",
+                "uk": "Fix sentry issue, error in opening USB-Port"
             },
             "0.1.0": {
                 "en": "error in device mode corrected",
@@ -64,7 +65,8 @@
                 "it": "errore nella modalità dispositivo corretto",
                 "es": "error en modo dispositivo corregido",
                 "pl": "poprawiony błąd w trybie urządzenia",
-                "zh-cn": "设备模式下的错误已更正"
+                "zh-cn": "设备模式下的错误已更正",
+                "uk": "error in device mode corrected"
             },
             "0.0.8": {
                 "en": "Propper connection state handling and reconnect when lost",
@@ -76,7 +78,8 @@
                 "it": "Gestione dello stato di connessione del propper e ricollegamento in caso di perdita",
                 "es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
                 "pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
-                "zh-cn": "支持器连接状态处理，丢失时重新连接"
+                "zh-cn": "支持器连接状态处理，丢失时重新连接",
+                "uk": "Propper connection state handling and reconnect when lost"
             }
         },
         "titleLang": {
