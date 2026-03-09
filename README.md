@@ -19,6 +19,9 @@ Read VE.direct data from a Victron device with vedirect connector over USB <-> s
 Set the proper device (example /dev/ttyUSB0) in adapter config.
 
 ## Changelog
+
+### **WORK IN PROGRESS**
+- (iobroker-bot) Adapter requires node.js >= 20 now.
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### __WORK IN PROGRESS__
