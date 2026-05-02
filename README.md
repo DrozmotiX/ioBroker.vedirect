@@ -24,6 +24,9 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
     ### __WORK IN PROGRESS__
 -->
 
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 0.3.3 (2024-09-10)
 * (DutchmanNL) Repository checker compliance updates
 * (DutchmanNL) Update dependencies for Node.js 18+ compatibility
