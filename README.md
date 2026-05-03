@@ -61,6 +61,8 @@ Set the proper device (example /dev/ttyUSB0) in adapter config.
 ### 0.0.7
 * (DutchmanNL & [Andiling](https://github.com/andiling)) Alpha release
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## License
 MIT License
 
