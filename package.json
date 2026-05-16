@@ -41,7 +41,7 @@
     "@iobroker/adapter-dev": "^1.4.0",
     "@iobroker/testing": "^5.0.4",
     "@types/node": "^20.4.4",
-    "axios": "^0.30.0",
+    "axios": "^1.16.1",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
