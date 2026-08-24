@@ -3,19 +3,6 @@
         "name": "vedirect",
         "version": "0.3.3",
         "news": {
-            "0.3.3": {
-                "en": "Repository checker compliance updates, dependencies updated for Node.js 18+ compatibility",
-                "de": "Repository Checker Compliance-Updates, Abhängigkeiten für Node.js 18+ Kompatibilität aktualisiert",
-                "ru": "Обновления соответствия средства проверки репозитория, зависимости обновлены для совместимости с Node.js 18+",
-                "pt": "Atualizações de conformidade do verificador de repositório, dependências atualizadas para compatibilidade Node.js 18+",
-                "nl": "Repository checker compliance updates, afhankelijkheden bijgewerkt voor Node.js 18+ compatibiliteit",
-                "fr": "Mises à jour de conformité du vérificateur de référentiel, dépendances mises à jour pour la compatibilité Node.js 18+",
-                "it": "Aggiornamenti di conformità del verificatore del repository, dipendenze aggiornate per la compatibilità Node.js 18+",
-                "es": "Actualizaciones de cumplimiento del comprobador de repositorio, dependencias actualizadas para compatibilidad Node.js 18+",
-                "pl": "Aktualizacje zgodności sprawdzarki repozytorium, zaktualizowane zależności dla zgodności Node.js 18+",
-                "uk": "Оновлення відповідності перевірки репозиторію, залежності оновлені для сумісності з Node.js 18+",
-                "zh-cn": "存储库检查器合规性更新，为Node.js 18+兼容性更新了依赖项"
-            },
             "0.3.0": {
                 "en": "Bugfixes\n([Andiling](https://github.com/andiling)) Update to support Protocol Version 3.33",
                 "de": "Bugfixes\n[Andiling](https://github.com/andiling) Unterstützung für Protokollversion 3.33",
@@ -53,7 +40,7 @@
                 "es": "Solucionar problema de centinela, error al abrir el puerto USB",
                 "pl": "Napraw problem z działkiem, błąd podczas otwierania portu USB",
                 "zh-cn": "修复哨兵问题，打开USB端口时出错",
-                "uk": "Fix sentry issue, error in opening USB-Port"
+                "uk": "Виправлено проблему Sentry, помилка відкриття USB-порту"
             },
             "0.1.0": {
                 "en": "error in device mode corrected",
@@ -66,7 +53,7 @@
                 "es": "error en modo dispositivo corregido",
                 "pl": "poprawiony błąd w trybie urządzenia",
                 "zh-cn": "设备模式下的错误已更正",
-                "uk": "error in device mode corrected"
+                "uk": "виправлено помилку в режимі пристрою"
             },
             "0.0.8": {
                 "en": "Propper connection state handling and reconnect when lost",
@@ -79,7 +66,7 @@
                 "es": "Manejo apropiado del estado de conexión y reconexión cuando se pierde",
                 "pl": "Obsługa stanu połączenia propper i ponowne połączenie w przypadku utraty",
                 "zh-cn": "支持器连接状态处理，丢失时重新连接",
-                "uk": "Propper connection state handling and reconnect when lost"
+                "uk": "Правильна обробка стану з'єднання та повторне підключення при втраті"
             }
         },
         "titleLang": {
@@ -149,7 +136,7 @@
         ],
         "globalDependencies": [
             {
-                "admin": ">=7.6.17"
+                "admin": ">=7.6.20"
             }
         ]
     },

@@ -8,6 +8,8 @@ iobroker.*.tgz
 
 Thumbs.db
 launch.json
+.DS_Store
+.commitinfo
 
 # i18n intermediate files
 admin/i18n/flat.txt
