@@ -28,6 +28,8 @@ This adapter uses Sentry libraries to automatically report exceptions and code e
 -->
 ### __WORK IN PROGRESS__
 * (DutchmanNL) Maintenance: raise Node.js to 22, modernise CI and release tooling, update dependencies, resolve repository checker findings
+* (DutchmanNL) Admin configuration page uses responsive column classes (s/m/l) for mobile devices
+* (DutchmanNL) Added prettier.config.mjs matching @iobroker/eslint-config and reformatted the sources accordingly
 
 ### 0.3.3 (2024-09-10)
 * (DutchmanNL) Repository checker compliance updates
