@@ -98,6 +98,69 @@ describe('VE.Direct adapter state handling', () => {
         expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.1, ack: true })).to.equal(true);
     });
 
+    it('coalesces queued frames instead of building an unbounded database backlog', async () => {
+        const adapter = harness();
+        adapter.connectionRequested = true;
+        adapter.connectionState = true;
+        let release;
+        adapter.setStateChangedAsync
+            .withArgs('V')
+            .onFirstCall()
+            .returns(new Promise(resolve => (release = resolve)));
+        adapter.enqueueFrame({ V: 11.1 });
+        await new Promise(resolve => setImmediate(resolve));
+        adapter.enqueueFrame({ V: 22.2 });
+        adapter.enqueueFrame({ V: 33.3 });
+        release();
+        await adapter.frameQueue;
+        const values = adapter.setStateChangedAsync
+            .getCalls()
+            .filter(call => call.args[0] === 'V')
+            .map(call => call.args[1].val);
+        expect(values).to.deep.equal([11.1, 33.3]);
+    });
+
+    it('drops queued frames and TTL renewal on disconnect, then accepts fresh generation data', async () => {
+        const adapter = harness();
+        adapter.connectionRequested = true;
+        adapter.connectionState = true;
+        adapter.expireSeconds = 30;
+        let release;
+        adapter.setStateAsync
+            .withArgs('V')
+            .onFirstCall()
+            .returns(new Promise(resolve => (release = resolve)));
+        adapter.enqueueFrame({ V: 11.1 });
+        await new Promise(resolve => setImmediate(resolve));
+        adapter.enqueueFrame({ V: 22.2 });
+        adapter.enqueueFrame({ V: 33.3 });
+        await adapter.safeSetConnectionState(false);
+        release();
+        await adapter.frameQueue;
+        let values = adapter.setStateAsync
+            .getCalls()
+            .filter(call => call.args[0] === 'V')
+            .map(call => call.args[1].val);
+        expect(values).to.deep.equal([11.1]);
+
+        await adapter.safeSetConnectionState(true);
+        adapter.enqueueFrame({ V: 44.4 });
+        await adapter.frameQueue;
+        values = adapter.setStateAsync
+            .getCalls()
+            .filter(call => call.args[0] === 'V')
+            .map(call => call.args[1].val);
+        expect(values).to.deep.equal([11.1, 44.4]);
+        expect(adapter.setStateAsync.lastCall.args[1]).to.include({ expire: 30, ack: true });
+    });
+
+    it('does not publish a frame whose receive time already exceeded the data timeout', async () => {
+        const adapter = harness();
+        adapter.connectionRequested = true;
+        await adapter.publishFrame({ V: 11.1 }, adapter.connectionGeneration, Date.now() - 10001);
+        expect(adapter.setStateChangedAsync.calledWith('V')).to.equal(false);
+    });
+
     it('migrates info.connection metadata', async () => {
         const adapter = harness();
         await adapter.initConnectionObject();

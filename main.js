@@ -25,6 +25,9 @@ class Vedirect extends utils.Adapter {
         this.unloadPromise = undefined;
         this.unloaded = false;
         this.frameQueue = Promise.resolve();
+        this.pendingFrameBatch = null;
+        this.frameDrainActive = false;
+        this.connectionGeneration = 0;
         this.pendingSample = null;
         this.sampleTimer = undefined;
         this.unloadTimeoutMs = UNLOAD_DRAIN_TIMEOUT_MS;
@@ -193,11 +196,41 @@ class Vedirect extends utils.Adapter {
         if (this.unloaded) {
             return;
         }
-        const snapshot = { ...frame };
-        const operation = this.frameQueue.then(() => this.publishFrame(snapshot));
-        this.frameQueue = operation.catch(error =>
-            this.log.error(`Could not process VE.Direct frame: ${this.errorText(error)}`),
-        );
+        const previous = this.pendingFrameBatch;
+        this.pendingFrameBatch = {
+            values: { ...((previous && previous.values) || {}), ...frame },
+            generation: this.connectionGeneration,
+            receivedAt: Date.now(),
+        };
+        this.startFrameDrain();
+    }
+
+    startFrameDrain() {
+        if (this.frameDrainActive || this.unloaded) {
+            return;
+        }
+        this.frameDrainActive = true;
+        const operation = this.drainFrames();
+        this.frameQueue = operation;
+        const clear = () => {
+            this.frameDrainActive = false;
+            if (this.pendingFrameBatch && !this.unloaded) {
+                this.startFrameDrain();
+            }
+        };
+        void operation.then(clear, clear);
+    }
+
+    async drainFrames() {
+        while (this.pendingFrameBatch && !this.unloaded) {
+            const batch = this.pendingFrameBatch;
+            this.pendingFrameBatch = null;
+            try {
+                await this.publishFrame(batch.values, batch.generation, batch.receivedAt);
+            } catch (error) {
+                this.log.error(`Could not process VE.Direct frame: ${this.errorText(error)}`);
+            }
+        }
     }
 
     clearPendingSample() {
@@ -208,12 +241,21 @@ class Vedirect extends utils.Adapter {
         this.pendingSample = null;
     }
 
-    async publishFrame(frame) {
-        if (this.unloaded || this.connectionRequested === false) {
+    canPublishFrame(generation, receivedAt) {
+        return (
+            !this.unloaded &&
+            this.connectionRequested !== false &&
+            generation === this.connectionGeneration &&
+            Date.now() - receivedAt < DATA_TIMEOUT_MS
+        );
+    }
+
+    async publishFrame(frame, generation = this.connectionGeneration, receivedAt = Date.now()) {
+        if (!this.canPublishFrame(generation, receivedAt)) {
             return;
         }
         for (const [key, value] of Object.entries(frame)) {
-            if (this.unloaded || this.connectionRequested === false) {
+            if (!this.canPublishFrame(generation, receivedAt)) {
                 return;
             }
             const field = VE_DIRECT_FIELDS[key];
@@ -222,7 +264,7 @@ class Vedirect extends utils.Adapter {
             }
             try {
                 await this.ensureStateObject(field);
-                if (this.unloaded) {
+                if (!this.canPublishFrame(generation, receivedAt)) {
                     return;
                 }
                 await this.writeState(key, value, field);
@@ -289,6 +331,10 @@ class Vedirect extends utils.Adapter {
     async safeSetConnectionState(connected) {
         if (!connected) {
             this.clearPendingSample();
+            this.pendingFrameBatch = null;
+            if (this.connectionRequested !== false) {
+                this.connectionGeneration++;
+            }
         }
         if (this.connectionRequested === connected) {
             return;
@@ -327,6 +373,7 @@ class Vedirect extends utils.Adapter {
             this.watchDogInterval = undefined;
         }
         this.clearPendingSample();
+        this.pendingFrameBatch = null;
         this.com.onFrame = undefined;
         this.com.onValidFrame = undefined;
         const operation = this.performUnload(this.activeWatchDog, this.readyPromise);

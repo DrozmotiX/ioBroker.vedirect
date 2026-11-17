@@ -397,6 +397,39 @@ describe('VeDirectCom serial lifecycle', () => {
         expect(com.isOpen()).to.equal(false);
     });
 
+    it('reinstalls listeners when late open succeeds after an explicit close', async () => {
+        const port = new FakeSerialPort();
+        let openCallback;
+        let releaseClose;
+        port.closeGate = new Promise(resolve => (releaseClose = resolve));
+        const reported = [];
+        const com = new VeDirectCom(
+            (_path, _options, callback) => {
+                openCallback = callback;
+                return port;
+            },
+            { openTimeoutMs: 10, closeTimeoutMs: 20, lateCloseRetryMs: 1 },
+        );
+        com.onError = error => reported.push(error);
+        await expect(com.open('slow')).to.be.rejectedWith('open timed out');
+        await com.close();
+        expect(port.listenerCount('error')).to.equal(0);
+        expect(port.listenerCount('close')).to.equal(0);
+
+        port.isOpen = true;
+        openCallback();
+        await immediate();
+        expect(port.listenerCount('error')).to.equal(1);
+        expect(port.listenerCount('close')).to.equal(1);
+        const expected = new Error('late native error');
+        expect(() => port.emit('error', expected)).not.to.throw();
+        expect(reported).to.include(expected);
+        releaseClose();
+        await immediate();
+        expect(port.isOpen).to.equal(false);
+        expect(port.listenerCount('error')).to.equal(0);
+    });
+
     it('times out a set callback and cleans up the open port', async () => {
         const port = new FakeSerialPort();
         port.set = () => undefined;

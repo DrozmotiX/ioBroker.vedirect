@@ -15,6 +15,15 @@ function makeFrame(fields, leadingNewline = true) {
     return Buffer.concat([body, Buffer.from([(256 - sum) & 0xff])]);
 }
 
+function makeRawFrame(bodyText) {
+    const body = Buffer.from(bodyText, 'binary');
+    let sum = 0;
+    for (const byte of body) {
+        sum = (sum + byte) & 0xff;
+    }
+    return Buffer.concat([body, Buffer.from([(256 - sum) & 0xff])]);
+}
+
 function makeFrameWithChecksum(target) {
     const empty = makeFrame([
         ['V', '13118'],
@@ -254,15 +263,20 @@ describe('VE.Direct byte parser', () => {
         expect(parser.checksumErrors).to.equal(1);
     });
 
-    it('recovers at every line-limit boundary, including 127 and 128 bytes', () => {
+    it('discards ambiguous line-overflow candidates and recovers on the following block', () => {
         for (const length of [127, 128, 129, 200]) {
             const parser = new VeDirectParser();
             const frames = collect(parser);
             parser.receive(
-                Buffer.concat([Buffer.from('\r\n'), Buffer.from('X'.repeat(length)), makeFrame([['V', '13118']])]),
+                Buffer.concat([
+                    Buffer.from('\r\n'),
+                    Buffer.from('X'.repeat(length)),
+                    makeFrame([['V', '13118']]),
+                    makeFrame([['I', '1000']]),
+                ]),
             );
-            expect(frames, `garbage length ${length}`).to.deep.equal([{ V: 13.118 }]);
-            expect(parser.invalidFrames, `garbage length ${length}`).to.equal(1);
+            expect(frames, `garbage length ${length}`).to.deep.equal([{ I: 1 }]);
+            expect(parser.invalidFrames, `garbage length ${length}`).to.be.greaterThan(0);
         }
     });
 
@@ -274,6 +288,34 @@ describe('VE.Direct byte parser', () => {
         parser.receive(Buffer.concat([oversized, makeFrame([['V', '13118']])]));
         expect(parser.invalidFrames).to.be.greaterThan(0);
         expect(frames[frames.length - 1]).to.deep.equal({ V: 13.118 });
+    });
+
+    it('never rehabilitates malformed or overflowing blocks through mid-frame recovery', () => {
+        const vectors = [
+            makeRawFrame('\r\nk~\r\nV\t13118\r\nChecksum\t'),
+            makeRawFrame('\r\nV\t0x3336\r\nX_PAD\tP\r\n\r\nV\t13118\r\nChecksum\t'),
+            makeRawFrame(`\r\n${'A'.repeat(128)}i\r\nV\t13118\r\nChecksum\t`),
+        ];
+        const next = makeFrame([['I', '1000']]);
+        for (const malformed of vectors) {
+            const stream = Buffer.concat([malformed, next]);
+            for (let split = 0; split <= stream.length; split++) {
+                const parser = new VeDirectParser();
+                const frames = collect(parser);
+                let validFrames = 0;
+                parser.onValidFrame = () => validFrames++;
+                parser.receive(stream.subarray(0, split));
+                parser.receive(stream.subarray(split));
+                expect(frames, `split ${split}`).to.deep.equal([{ I: 1 }]);
+                expect(validFrames, `split ${split}`).to.equal(1);
+            }
+            const bytewise = new VeDirectParser();
+            const byteFrames = collect(bytewise);
+            for (const byte of stream) {
+                bytewise.receive(Buffer.from([byte]));
+            }
+            expect(byteFrames).to.deep.equal([{ I: 1 }]);
+        }
     });
 
     it('resynchronizes on the first complete block after an orphaned checksum byte', () => {
@@ -338,8 +380,8 @@ describe('VE.Direct byte parser', () => {
         const frames = collect(parser);
         parser.receive(Buffer.from('\r\nmalformed-line\r\n'));
         expect(parser.invalidFrames).to.equal(1);
-        parser.receive(makeFrame([['V', '13118']]));
-        expect(frames).to.deep.equal([{ V: 13.118 }]);
+        parser.receive(Buffer.concat([makeFrame([['V', '13118']]), makeFrame([['I', '1000']])]));
+        expect(frames).to.deep.equal([{ I: 1 }]);
     });
 
     it('resets partial state in finally when a callback throws', () => {
