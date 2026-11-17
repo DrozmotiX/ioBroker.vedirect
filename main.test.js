@@ -95,7 +95,36 @@ describe('VE.Direct adapter state handling', () => {
         await adapter.publishFrame({ V: 13.1 });
         expect(adapter.setObjectNotExistsAsync.callCount).to.equal(2);
         expect(adapter.log.error.called).to.equal(true);
+        const publishErrors = adapter.log.error
+            .getCalls()
+            .filter(call => String(call.args[0]).includes('Could not publish V'));
+        expect(publishErrors).to.have.lengthOf(1);
         expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.1, ack: true })).to.equal(true);
+    });
+
+    it('throttles repeated identical reopen failures across watchdog retries', async () => {
+        const adapter = harness();
+        adapter.com.open.rejects(new Error('no such device'));
+        await adapter.watchDog();
+        adapter.lastOpenAttempt = 0;
+        await adapter.watchDog();
+        expect(adapter.com.open.callCount).to.equal(2);
+        const messages = adapter.log.error
+            .getCalls()
+            .filter(call => String(call.args[0]).includes('Could not open/reopen'));
+        expect(messages).to.have.lengthOf(1);
+    });
+
+    it('throttles repeated info.connection write failures while still retrying the write', async () => {
+        const adapter = harness();
+        adapter.setStateAsync.rejects(new Error('database unavailable'));
+        await adapter.safeSetConnectionState(true);
+        await adapter.safeSetConnectionState(true);
+        expect(adapter.setStateAsync.callCount).to.equal(2);
+        const messages = adapter.log.error
+            .getCalls()
+            .filter(call => String(call.args[0]).includes('Could not update info.connection'));
+        expect(messages).to.have.lengthOf(1);
     });
 
     it('coalesces queued frames instead of building an unbounded database backlog', async () => {

@@ -35,8 +35,7 @@ class Vedirect extends utils.Adapter {
         this.connectionRequested = undefined;
         this.stateQueues = new Map();
         this.objectPromises = new Map();
-        this.lastSerialError = '';
-        this.lastSerialErrorTime = 0;
+        this.errorLogTimes = new Map();
         this.on('ready', this.handleReady.bind(this));
         this.on('unload', this.onUnload.bind(this));
     }
@@ -79,7 +78,7 @@ class Vedirect extends utils.Adapter {
             void this.safeSetConnectionState(true);
         };
         this.com.onFrame = frame => this.acceptFrame(frame);
-        this.com.onError = error => this.logSerialError(error);
+        this.com.onError = error => this.logThrottled('VE.Direct serial error: ', error);
         if (this.unloaded) {
             return;
         }
@@ -163,7 +162,7 @@ class Vedirect extends utils.Adapter {
             await this.com.open(this.serialPortPath);
         } catch (error) {
             if (!this.unloaded) {
-                this.log.error(`Could not open/reopen VE.Direct port: ${this.errorText(error)}`);
+                this.logThrottled('Could not open/reopen VE.Direct port: ', error);
                 await this.safeSetConnectionState(false);
             }
         }
@@ -228,7 +227,7 @@ class Vedirect extends utils.Adapter {
             try {
                 await this.publishFrame(batch.values, batch.generation, batch.receivedAt);
             } catch (error) {
-                this.log.error(`Could not process VE.Direct frame: ${this.errorText(error)}`);
+                this.logThrottled('Could not process VE.Direct frame: ', error);
             }
         }
     }
@@ -269,7 +268,7 @@ class Vedirect extends utils.Adapter {
                 }
                 await this.writeState(key, value, field);
             } catch (error) {
-                this.log.error(`Could not publish ${key}: ${this.errorText(error)}`);
+                this.logThrottled(`Could not publish ${key}: `, error);
             }
         }
     }
@@ -347,19 +346,20 @@ class Vedirect extends utils.Adapter {
             if (this.connectionRequested === connected) {
                 this.connectionRequested = undefined;
             }
-            this.log.error(`Could not update info.connection: ${this.errorText(error)}`);
+            this.logThrottled('Could not update info.connection: ', error);
         }
     }
 
-    logSerialError(error) {
-        const now = Date.now();
+    logThrottled(prefix, error) {
         const text = this.errorText(error);
-        if (text === this.lastSerialError && now - this.lastSerialErrorTime < ERROR_LOG_COOLDOWN_MS) {
+        const key = `${prefix}\u0000${text}`;
+        const now = Date.now();
+        const previous = this.errorLogTimes.get(key);
+        if (previous !== undefined && now - previous < ERROR_LOG_COOLDOWN_MS) {
             return;
         }
-        this.lastSerialError = text;
-        this.lastSerialErrorTime = now;
-        this.log.error(`VE.Direct serial error: ${text}`);
+        this.errorLogTimes.set(key, now);
+        this.log.error(`${prefix}${text}`);
     }
 
     onUnload(callback) {
