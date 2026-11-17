@@ -68,15 +68,15 @@ Der bisherige Konfigurationsname bleibt aus Kompatibilitätsgründen erhalten, d
 
 ## Sonderwerte und Decodierung
 
-| Eingabe | Verhalten |
-|---|---|
-| `---` | `null`; kein `NaN` oder Pseudo-Nullwert |
-| `TTG=-1` | `TTG=null`, zusätzlich `TTGInfinite=true` |
-| Normales TTG | Weiterhin Minuten zur Wahrung der bestehenden State-API |
-| `FW` / `FWE` | Strings; führende Nullen und Release-/Beta-Kennungen bleiben erhalten |
-| `AR` / `WARN` / `OR` | Alle gesetzten Bits werden gemeinsam decodiert; unbekannte Restbits bleiben sichtbar |
-| `Alarm` / `Relay` / `LOAD` | Case-insensitive, kanonische `ON`/`OFF`-Strings ohne bisherigen Typwechsel |
-| Unbekanntes Feld | Kein State; bekannte Werte desselben gültigen Blocks bleiben erhalten |
+| Eingabe                    | Verhalten                                                                            |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `---`                      | `null`; kein `NaN` oder Pseudo-Nullwert                                              |
+| `TTG=-1`                   | `TTG=null`, zusätzlich `TTGInfinite=true`                                            |
+| Normales TTG               | Weiterhin Minuten zur Wahrung der bestehenden State-API                              |
+| `FW` / `FWE`               | Strings; führende Nullen und Release-/Beta-Kennungen bleiben erhalten                |
+| `AR` / `WARN` / `OR`       | Alle gesetzten Bits werden gemeinsam decodiert; unbekannte Restbits bleiben sichtbar |
+| `Alarm` / `Relay` / `LOAD` | Case-insensitive, kanonische `ON`/`OFF`-Strings ohne bisherigen Typwechsel           |
+| Unbekanntes Feld           | Kein State; bekannte Werte desselben gültigen Blocks bleiben erhalten                |
 
 ## Migration und Kompatibilität
 
@@ -108,7 +108,7 @@ Der vollständige Audit steht in [docs/audit-2026-11-17.md](docs/audit-2026-11-1
 
 ## Dependency-Audit
 
-Der Produktions-Audit ist ohne Befund. Im Entwicklungs-Toolchain-Audit verbleibt eine transitve `picomatch`-ReDoS-Meldung über `tinyglobby`/TypeScript-ESLint, für die zum Prüfzeitpunkt keine korrigierte kompatible Release-Kette verfügbar ist. Sie betrifft ausschließlich Entwicklungs-Globbing mit potenziell bösartigen Patterns, nicht den Adapterbetrieb oder die VE.Direct-Verarbeitung.
+Der Produktions-Audit ist ohne Befund. Im Entwicklungs-Toolchain-Audit verbleibt eine transitive `picomatch`-ReDoS-Meldung über `tinyglobby`/TypeScript-ESLint, für die zum Prüfzeitpunkt keine korrigierte kompatible Release-Kette verfügbar ist. Sie betrifft ausschließlich Entwicklungs-Globbing mit potenziell bösartigen Patterns, nicht den Adapterbetrieb oder die VE.Direct-Verarbeitung.
 
 ## Changelog
 

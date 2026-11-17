@@ -418,7 +418,13 @@ describe('VE.Direct adapter over the real serial lifecycle', () => {
         await startAdapter(adapter);
         expect(ports).to.have.lengthOf(1);
 
-        ports[0].emit('data', makeFrame([['V', '13290'], ['I', '-1250']]));
+        ports[0].emit(
+            'data',
+            makeFrame([
+                ['V', '13290'],
+                ['I', '-1250'],
+            ]),
+        );
         await flush();
         expect(adapter.pendingSample).to.deep.equal({ V: 13.29, I: -1.25 });
 
