@@ -4,17 +4,17 @@
         "version": "0.3.3",
         "news": {
             "0.3.3": {
-                "en": "Repository checker compliance updates\nUpdate dependencies for Node.js 18+ compatibility",
-                "de": "Anpassungen für die Repository-Prüfung\nAbhängigkeiten für Node.js 18+ aktualisiert",
-                "ru": "Обновления для соответствия проверке репозитория\nОбновлены зависимости для совместимости с Node.js 18+",
-                "pt": "Atualizações de conformidade com o verificador de repositório\nDependências atualizadas para compatibilidade com Node.js 18+",
-                "nl": "Aanpassingen voor de repository checker\nAfhankelijkheden bijgewerkt voor Node.js 18+ compatibiliteit",
-                "fr": "Mises à jour de conformité au vérificateur de dépôt\nDépendances mises à jour pour la compatibilité Node.js 18+",
-                "it": "Aggiornamenti di conformità al controllo del repository\nDipendenze aggiornate per la compatibilità con Node.js 18+",
-                "es": "Actualizaciones de conformidad con el verificador del repositorio\nDependencias actualizadas para compatibilidad con Node.js 18+",
-                "pl": "Aktualizacje zgodności z kontrolą repozytorium\nZaktualizowano zależności pod kątem zgodności z Node.js 18+",
-                "uk": "Оновлення для відповідності перевірці репозиторію\nОновлено залежності для сумісності з Node.js 18+",
-                "zh-cn": "仓库检查合规性更新\n更新依赖项以兼容 Node.js 18+"
+                "en": "Repository checker compliance updates\nUpdate dependencies for Node.js 22+ compatibility",
+                "de": "Anpassungen für die Repository-Prüfung\nAbhängigkeiten für Node.js 22+ aktualisiert",
+                "ru": "Обновления для соответствия проверке репозитория\nОбновлены зависимости для совместимости с Node.js 22+",
+                "pt": "Atualizações de conformidade com o verificador de repositório\nDependências atualizadas para compatibilidade com Node.js 22+",
+                "nl": "Aanpassingen voor de repository checker\nAfhankelijkheden bijgewerkt voor Node.js 22+ compatibiliteit",
+                "fr": "Mises à jour de conformité au vérificateur de dépôt\nDépendances mises à jour pour la compatibilité Node.js 22+",
+                "it": "Aggiornamenti di conformità al controllo del repository\nDipendenze aggiornate per la compatibilità con Node.js 22+",
+                "es": "Actualizaciones de conformidad con el verificador del repositorio\nDependencias actualizadas para compatibilidad con Node.js 22+",
+                "pl": "Aktualizacje zgodności z kontrolą repozytorium\nZaktualizowano zależności pod kątem zgodności z Node.js 22+",
+                "uk": "Оновлення для відповідності перевірці репозиторію\nОновлено залежності для сумісності з Node.js 22+",
+                "zh-cn": "仓库检查合规性更新\n更新依赖项以兼容 Node.js 22+"
             },
             "0.3.0": {
                 "en": "Bugfixes\n([Andiling](https://github.com/andiling)) Update to support Protocol Version 3.33",
@@ -96,8 +96,8 @@
             "zh-cn": "Vedirect"
         },
         "desc": {
-            "en": "Read VE.direct data from Victron Solar Chargers",
-            "de": "Lesen Sie VE.direct-Daten von Victron Solar Chargers",
+            "en": "Robust read-only VE.Direct data from Victron devices",
+            "de": "Robuste Read-only-VE.Direct-Daten von Victron-Geräten",
             "ru": "Считайте данные VE.direct с Victron Solar Chargers.",
             "pt": "Leia os dados VE.direct dos Victron Solar Chargers",
             "nl": "Lees VE.direct-gegevens van Victron Solar Chargers",
@@ -125,8 +125,8 @@
         "platform": "Javascript/Node.js",
         "icon": "vedirect.png",
         "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/DrozmotiX/ioBroker.vedirect/master/admin/vedirect.png",
-        "readme": "https://github.com/DrozmotiX/ioBroker.vedirect/blob/master/README.md",
+        "extIcon": "https://raw.githubusercontent.com/joergspoerl/ioBroker.vedirect/main/admin/vedirect.png",
+        "readme": "https://github.com/joergspoerl/ioBroker.vedirect/blob/main/README.md",
         "loglevel": "info",
         "mode": "daemon",
         "type": "energy",

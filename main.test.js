@@ -1,29 +1,257 @@
 'use strict';
 
-/**
- * This is a dummy TypeScript test file using chai and mocha
- *
- * It's automatically excluded from npm and its build output is excluded from both git and npm.
- * It is advised to test all your modules with accompanying *.test.js-files
- */
-
-// tslint:disable:no-unused-expression
-
+const { EventEmitter } = require('events');
 const { expect } = require('chai');
-// import { functionToTest } from "./moduleToTest";
+const proxyquire = require('proxyquire');
+const sinon = require('sinon');
+const { VeDirectParser } = require('./lib/veDirect/veDirectParser');
 
-describe('module to test => function to test', () => {
-    // initializing logic
-    const expected = 5;
-
-    it(`should return ${expected}`, () => {
-        const result = 5;
-        // assign result a value from functionToTest
-        expect(result).to.equal(expected);
-        // or using the should() syntax
-        result.should.equal(expected);
-    });
-    // ... more tests => it
+class Adapter extends EventEmitter {}
+const { Vedirect } = proxyquire.noCallThru()('./main', {
+    '@iobroker/adapter-core': { Adapter },
 });
 
-// ... more test suites => describe
+function harness() {
+    const adapter = new Vedirect();
+    adapter.com = {
+        isOpen: sinon.stub().returns(false),
+        open: sinon.stub().resolves(),
+        close: sinon.stub().resolves(),
+        onFrame: undefined,
+        onValidFrame: undefined,
+        onError: undefined,
+    };
+    adapter.config = { USBDevice: '/dev/fake', expireTime: 0, messageBuffer: 0 };
+    adapter.serialPortPath = '/dev/fake';
+    adapter.log = { debug: sinon.stub(), info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() };
+    adapter.setObjectNotExistsAsync = sinon.stub().resolves();
+    adapter.extendObjectAsync = sinon.stub().resolves();
+    adapter.setStateAsync = sinon.stub().resolves();
+    adapter.setStateChangedAsync = sinon.stub().resolves();
+    return adapter;
+}
+
+function makeFrame(fields) {
+    const body = Buffer.from(`\r\n${fields.map(([label, value]) => `${label}\t${value}\r\n`).join('')}Checksum\t`);
+    let sum = 0;
+    for (const byte of body) {
+        sum = (sum + byte) & 0xff;
+    }
+    return Buffer.concat([body, Buffer.from([(256 - sum) & 0xff])]);
+}
+
+describe('VE.Direct adapter state handling', () => {
+    it('creates and migrates objects before publishing values', async () => {
+        const adapter = harness();
+        let releaseExtend;
+        adapter.extendObjectAsync.returns(new Promise(resolve => (releaseExtend = resolve)));
+        const publishing = adapter.publishFrame({ V: 13.29 });
+        await new Promise(resolve => setImmediate(resolve));
+        expect(adapter.setStateChangedAsync.calledWith('V')).to.equal(false);
+        releaseExtend();
+        await publishing;
+        expect(adapter.setObjectNotExistsAsync.calledWith('V')).to.equal(true);
+        expect(adapter.extendObjectAsync.calledWith('V')).to.equal(true);
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.29, ack: true })).to.equal(true);
+        const common = adapter.extendObjectAsync.firstCall.args[1].common;
+        expect(common).to.include({ type: 'number', role: 'value.voltage', unit: 'V', read: true, write: false });
+        expect(common.desc).to.be.a('string').and.not.equal('');
+    });
+
+    it('publishes unavailable values as null rather than NaN', async () => {
+        const adapter = harness();
+        await adapter.publishFrame({ T: null, TTG: null, TTGInfinite: true });
+        expect(adapter.setStateChangedAsync.calledWith('T', { val: null, ack: true })).to.equal(true);
+        expect(adapter.setStateChangedAsync.calledWith('TTG', { val: null, ack: true })).to.equal(true);
+        for (const call of adapter.setStateChangedAsync.getCalls()) {
+            expect(Number.isNaN(call.args[1].val)).to.equal(false);
+        }
+    });
+
+    it('uses changed writes without expire property when TTL is disabled', async () => {
+        const adapter = harness();
+        await adapter.publishFrame({ V: 13.29, H21: 53 });
+        expect(adapter.setStateChangedAsync.calledTwice).to.equal(true);
+        expect(adapter.setStateAsync.calledWith('V')).to.equal(false);
+        for (const call of adapter.setStateChangedAsync.getCalls()) {
+            expect(call.args[1]).not.to.have.property('expire');
+        }
+    });
+
+    it('renews positive TTL only for expiring fields', async () => {
+        const adapter = harness();
+        adapter.expireSeconds = 30;
+        await adapter.publishFrame({ V: 13.29, PID: 'SmartSolar MPPT 100|50' });
+        expect(adapter.setStateAsync.calledWith('V', { val: 13.29, ack: true, expire: 30 })).to.equal(true);
+        expect(adapter.setStateChangedAsync.calledWith('PID', { val: 'SmartSolar MPPT 100|50', ack: true })).to.equal(
+            true,
+        );
+    });
+
+    it('retries object creation after a rejected database operation', async () => {
+        const adapter = harness();
+        adapter.setObjectNotExistsAsync.onFirstCall().rejects(new Error('database unavailable'));
+        await adapter.publishFrame({ V: 13.1 });
+        await adapter.publishFrame({ V: 13.1 });
+        expect(adapter.setObjectNotExistsAsync.callCount).to.equal(2);
+        expect(adapter.log.error.called).to.equal(true);
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.1, ack: true })).to.equal(true);
+    });
+
+    it('migrates info.connection metadata', async () => {
+        const adapter = harness();
+        await adapter.initConnectionObject();
+        expect(adapter.extendObjectAsync.calledWith('info.connection')).to.equal(true);
+        expect(adapter.extendObjectAsync.firstCall.args[1].common).to.include({
+            type: 'boolean',
+            role: 'indicator.connected',
+            read: true,
+            write: false,
+        });
+    });
+});
+
+describe('VE.Direct frame sampling', () => {
+    let clock;
+    beforeEach(() => (clock = sinon.useFakeTimers()));
+    afterEach(() => clock.restore());
+
+    it('merges complete multiblock frames instead of dropping serial lines', () => {
+        const adapter = harness();
+        adapter.samplingSeconds = 5;
+        adapter.enqueueFrame = sinon.stub();
+        adapter.acceptFrame({ V: 13.1, I: 1 });
+        adapter.acceptFrame({ H20: 0.12, H21: 53 });
+        adapter.acceptFrame({ V: 13.2, I: 1.1 });
+        expect(adapter.enqueueFrame.called).to.equal(false);
+        clock.tick(5000);
+        expect(adapter.enqueueFrame.calledOnce).to.equal(true);
+        expect(adapter.enqueueFrame.firstCall.args[0]).to.deep.equal({ V: 13.2, I: 1.1, H20: 0.12, H21: 53 });
+    });
+
+    it('does not turn a delayed sampled publication into fresh liveness', async () => {
+        const adapter = harness();
+        adapter.samplingSeconds = 5;
+        adapter.connectionState = false;
+        adapter.connectionRequested = false;
+        adapter.acceptFrame({ V: 13.1 });
+        await clock.tickAsync(5000);
+        await adapter.frameQueue;
+        expect(adapter.connectionState).to.equal(false);
+        expect(adapter.setStateAsync.calledWith('info.connection', { val: true, ack: true })).to.equal(false);
+    });
+
+    it('does not leave a partial sample after unload', () => {
+        const adapter = harness();
+        adapter.samplingSeconds = 5;
+        adapter.acceptFrame({ V: 13.1 });
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        clock.tick(10000);
+        expect(adapter.pendingSample).to.equal(null);
+        expect(adapter.sampleTimer).to.equal(undefined);
+    });
+});
+
+describe('VE.Direct watchdog and parser integration', () => {
+    it('does not report a connection merely because opening succeeded', async () => {
+        const adapter = harness();
+        await adapter.watchDog();
+        expect(adapter.com.open.calledOnce).to.equal(true);
+        expect(adapter.connectionState).to.equal(false);
+        expect(adapter.setStateAsync.calledWith('info.connection', { val: true, ack: true })).to.equal(false);
+    });
+
+    it('closes and reopens a stale open port', async () => {
+        const adapter = harness();
+        adapter.com.isOpen.returns(true);
+        await adapter.watchDog();
+        expect(adapter.com.close.calledOnce).to.equal(true);
+        expect(adapter.com.open.calledOnce).to.equal(true);
+        expect(adapter.connectionState).to.equal(false);
+    });
+
+    it('deduplicates overlapping watchdog operations', async () => {
+        const adapter = harness();
+        let release;
+        adapter.com.open.returns(new Promise(resolve => (release = resolve)));
+        const first = adapter.watchDog();
+        expect(adapter.watchDog()).to.equal(first);
+        release();
+        await first;
+        expect(adapter.com.open.calledOnce).to.equal(true);
+    });
+
+    it('uses only checksum-valid parser frames for liveness and publication', async () => {
+        const adapter = harness();
+        const parser = new VeDirectParser();
+        adapter.initConnectionObject = sinon.stub().resolves();
+        adapter.watchDog = sinon.stub().resolves();
+        await adapter.onReady();
+        if (adapter.watchDogInterval) {
+            clearInterval(adapter.watchDogInterval);
+        }
+        parser.onValidFrame = () => adapter.com.onValidFrame();
+        parser.onFrame = frame => adapter.com.onFrame(frame);
+
+        const corrupted = makeFrame([['V', '13290']]);
+        corrupted[5] ^= 1;
+        parser.receive(corrupted);
+        await new Promise(resolve => setImmediate(resolve));
+        expect(adapter.connectionState).to.equal(false);
+        expect(adapter.setStateChangedAsync.calledWith('V')).to.equal(false);
+
+        parser.receive(makeFrame([['V', '13290']]));
+        await adapter.frameQueue;
+        await new Promise(resolve => setImmediate(resolve));
+        expect(adapter.connectionState).to.equal(true);
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.29, ack: true })).to.equal(true);
+    });
+});
+
+describe('VE.Direct configuration and unload', () => {
+    for (const name of ['expireTime', 'messageBuffer']) {
+        it(`rejects invalid negative ${name} without starting a watchdog`, async () => {
+            const adapter = harness();
+            adapter.config[name] = -1;
+            adapter.initConnectionObject = sinon.stub().resolves();
+            adapter.handleReady();
+            await adapter.readyPromise;
+            expect(adapter.log.error.called).to.equal(true);
+            expect(adapter.watchDogInterval).to.equal(undefined);
+        });
+    }
+
+    it('writes a final acknowledged disconnected state before unload callback', async () => {
+        const adapter = harness();
+        await adapter.publishFrame({ V: 13.29 });
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        await adapter.unloadPromise;
+        expect(adapter.com.close.calledOnce).to.equal(true);
+        expect(adapter.connectionState).to.equal(false);
+        expect(adapter.setStateAsync.lastCall.args).to.deep.equal(['info.connection', { val: false, ack: true }]);
+        expect(callback.calledOnce).to.equal(true);
+    });
+
+    it('keeps serial resources independent between two instances', async () => {
+        const first = harness();
+        const second = harness();
+        const firstCallback = sinon.stub();
+        first.onUnload(firstCallback);
+        await first.unloadPromise;
+        expect(first.com.close.calledOnce).to.equal(true);
+        expect(second.com.close.called).to.equal(false);
+        expect(second.unloaded).to.equal(false);
+    });
+
+    it('finishes unload even if close fails', async () => {
+        const adapter = harness();
+        adapter.com.close.rejects(new Error('close failed'));
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        await adapter.unloadPromise;
+        expect(callback.calledOnce).to.equal(true);
+        expect(adapter.log.error.called).to.equal(true);
+    });
+});

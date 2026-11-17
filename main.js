@@ -1,532 +1,360 @@
 'use strict';
 
-/*
- * Created with @iobroker/create-adapter v1.16.0
-   VE.Direct Protocol Version 3.33 from 6. June 2023
- */
-
-// The adapter-core module gives you access to the core ioBroker functions
-// you need to create an adapter
 const utils = require('@iobroker/adapter-core');
-// Load your modules here, e.g.:
-const { SerialPort, ReadlineParser } = require('serialport');
-const stateAttr = require(`${__dirname}/lib/stateAttr.js`);
-const ProductNames = require(`${__dirname}/lib/ProductNames.js`);
-const ErrorNames = require(`${__dirname}/lib/ErrorNames.js`);
-const AlarmReasons = require(`${__dirname}/lib/AlarmReasons.js`);
-const OperationStates = require(`${__dirname}/lib/OperationStates.js`);
-const OffReasons = require(`${__dirname}/lib/OffReasons.js`);
-const DeviceModes = require(`${__dirname}/lib/DeviceModes.js`);
-const MpptModes = require(`${__dirname}/lib/MpptModes.js`);
-const BleReasons = require(`${__dirname}/lib/BleReasons.js`);
-const MonitorTypes = require(`${__dirname}/lib/MonitorTypes.js`);
-const warnMessages = {}; // Array to avoid unneeded spam too sentry
-let bufferMessage = false;
-const timeouts = {};
-let polling, port;
+const { VeDirectCom } = require('./lib/veDirectCom');
+const { VE_DIRECT_FIELDS } = require('./lib/veDirect/fields');
 
-const disableSentry = true; // Ensure to set to true during development !
+const WATCHDOG_INTERVAL_MS = 1000;
+const DATA_TIMEOUT_MS = 10000;
+const RECONNECT_COOLDOWN_MS = 5000;
+const ERROR_LOG_COOLDOWN_MS = 60000;
 
 class Vedirect extends utils.Adapter {
-    /**
-     * @param {Partial<ioBroker.AdapterOptions>} [options] Adapter options
-     */
-    constructor(options) {
-        // @ts-expect-error super call typing
-        super({
-            ...options,
-            name: 'vedirect',
-        });
-        this.on('ready', this.onReady.bind(this));
-        // this.on('objectChange', this.onObjectChange.bind(this));
-        // this.on('stateChange', this.onStateChange.bind(this));
-        // this.on('message', this.onMessage.bind(this));
+    constructor(options = {}) {
+        super({ ...options, name: 'vedirect' });
+        this.com = new VeDirectCom();
+        this.serialPortPath = '';
+        this.expireSeconds = 0;
+        this.samplingSeconds = 0;
+        this.lastFrameTime = 0;
+        this.lastOpenAttempt = 0;
+        this.watchDogInterval = undefined;
+        this.activeWatchDog = undefined;
+        this.readyPromise = undefined;
+        this.unloadPromise = undefined;
+        this.unloaded = false;
+        this.frameQueue = Promise.resolve();
+        this.pendingSample = null;
+        this.sampleTimer = undefined;
+        this.connectionState = undefined;
+        this.connectionRequested = undefined;
+        this.stateQueues = new Map();
+        this.objectPromises = new Map();
+        this.lastSerialError = '';
+        this.lastSerialErrorTime = 0;
+        this.on('ready', this.handleReady.bind(this));
         this.on('unload', this.onUnload.bind(this));
-        this.createdStatesDetails = {}; //  Array to store state objects to avoid unneeded object changes
     }
 
-    /**
-     * Is called when databases are connected and adapter received configuration.
-     */
+    handleReady() {
+        if (this.readyPromise) {
+            return;
+        }
+        const operation = this.onReady().catch(async error => {
+            this.log.error(`Could not initialize VE.Direct adapter: ${this.errorText(error)}`);
+            await this.safeSetConnectionState(false);
+        });
+        this.readyPromise = operation;
+        void operation.catch(error => this.log.error(`VE.Direct ready handler failed: ${this.errorText(error)}`));
+    }
+
     async onReady() {
-        // Initialize your adapter here
-        this.log.info('Starting VE.Direct with Protocol Version 3.33 and configurable expiring state capability');
-        this.setState('info.connection', false, true);
+        if (this.unloaded) {
+            return;
+        }
+        await this.initConnectionObject();
+        if (this.unloaded) {
+            return;
+        }
+        await this.safeSetConnectionState(false);
+        if (this.unloaded) {
+            return;
+        }
 
+        this.expireSeconds = this.nonNegativeConfig(this.config.expireTime, 'expireTime');
+        this.samplingSeconds = this.nonNegativeConfig(this.config.messageBuffer, 'messageBuffer');
+        this.serialPortPath = String(this.config.USBDevice || '').trim();
+        if (!this.serialPortPath || this.serialPortPath === '/dev/xxx') {
+            this.log.error('Configure a valid VE.Direct serial port before starting the adapter');
+            return;
+        }
+
+        this.com.onValidFrame = () => {
+            this.lastFrameTime = Date.now();
+            void this.safeSetConnectionState(true);
+        };
+        this.com.onFrame = frame => this.acceptFrame(frame);
+        this.com.onError = error => this.logSerialError(error);
+        if (this.unloaded) {
+            return;
+        }
+        void this.watchDog();
+        this.watchDogInterval = setInterval(() => void this.watchDog(), WATCHDOG_INTERVAL_MS);
+    }
+
+    async initConnectionObject() {
+        /** @type {ioBroker.StateCommon} */
+        const common = {
+            name: 'Fresh checksum-valid VE.Direct frame received',
+            type: 'boolean',
+            role: 'indicator.connected',
+            read: true,
+            write: false,
+            def: false,
+        };
+        await this.setObjectNotExistsAsync('info.connection', { type: 'state', common, native: {} });
+        if (this.unloaded) {
+            return;
+        }
+        await this.extendObjectAsync('info.connection', { common });
+    }
+
+    nonNegativeConfig(value, name) {
+        if (value == null || value === '') {
+            return 0;
+        }
+        const number = Number(value);
+        if (!Number.isFinite(number) || number < 0) {
+            throw new Error(`${name} must be a finite non-negative number`);
+        }
+        return number;
+    }
+
+    isFresh() {
+        return this.lastFrameTime > 0 && Date.now() - this.lastFrameTime < DATA_TIMEOUT_MS;
+    }
+
+    watchDog() {
+        if (this.activeWatchDog) {
+            return this.activeWatchDog;
+        }
+        const operation = this.performWatchDog();
+        this.activeWatchDog = operation;
+        const clear = () => {
+            if (this.activeWatchDog === operation) {
+                this.activeWatchDog = undefined;
+            }
+        };
+        void operation.then(clear, clear);
+        return operation;
+    }
+
+    async performWatchDog() {
+        if (this.unloaded || !this.serialPortPath) {
+            return;
+        }
+        if (this.isFresh()) {
+            return;
+        }
+        await this.safeSetConnectionState(false);
+        if (this.unloaded || this.isFresh()) {
+            return;
+        }
+        const now = Date.now();
+        if (now - this.lastOpenAttempt < RECONNECT_COOLDOWN_MS) {
+            return;
+        }
+        this.lastOpenAttempt = now;
         try {
-            // Open Serial port connection
-            const USB_Device = this.config.USBDevice;
-            port = new SerialPort({
-                path: USB_Device,
-                baudRate: 19200,
-            });
+            if (this.com.isOpen()) {
+                await this.com.close();
+                if (this.unloaded) {
+                    return;
+                }
+            }
+            if (this.unloaded) {
+                return;
+            }
+            await this.com.open(this.serialPortPath);
+        } catch (error) {
+            if (!this.unloaded) {
+                this.log.error(`Could not open/reopen VE.Direct port: ${this.errorText(error)}`);
+                await this.safeSetConnectionState(false);
+            }
+        }
+    }
 
-            port.on('error', error => {
-                this.log.error(`Issue handling serial port connection : ${JSON.stringify(error)}`);
-                this.setState('info.connection', false, true);
-            });
+    acceptFrame(frame) {
+        if (this.unloaded) {
+            return;
+        }
+        const snapshot = { ...frame };
+        if (this.samplingSeconds === 0) {
+            this.enqueueFrame(snapshot);
+            return;
+        }
+        this.pendingSample = { ...(this.pendingSample || {}), ...snapshot };
+        if (this.sampleTimer) {
+            return;
+        }
+        this.sampleTimer = setTimeout(() => {
+            this.sampleTimer = undefined;
+            const pending = this.pendingSample;
+            this.pendingSample = null;
+            if (pending && !this.unloaded) {
+                this.enqueueFrame(pending);
+            }
+        }, this.samplingSeconds * 1000);
+    }
 
-            // Open pipe and listen to parser to get data
-            const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+    enqueueFrame(frame) {
+        if (this.unloaded) {
+            return;
+        }
+        const snapshot = { ...frame };
+        const operation = this.frameQueue.then(() => this.publishFrame(snapshot));
+        this.frameQueue = operation.catch(error =>
+            this.log.error(`Could not process VE.Direct frame: ${this.errorText(error)}`),
+        );
+    }
 
-            parser.on('data', data => {
-                this.log.debug(`[Serial data received] ${data}`);
-                if (!bufferMessage) {
-                    this.log.debug(`Message buffer inactive, processing data`);
-                    this.parse_serial(data);
-                    if (this.config.messageBuffer > 0) {
-                        this.log.debug(`Activate Message buffer with delay of ${this.config.messageBuffer * 1000}`);
-                        bufferMessage = true;
-                        if (timeouts['mesageBuffer']) {
-                            this.clearTimeout(timeouts['mesageBuffer']);
-                            timeouts['mesageBuffer'] = null;
-                        }
-                        timeouts['mesageBuffer'] = this.setTimeout(() => {
-                            bufferMessage = false;
-                            this.log.debug(`Message buffer timeout reached, will process data`);
-                        }, this.config.messageBuffer * 1000);
-                    }
+    async publishFrame(frame) {
+        if (this.unloaded) {
+            return;
+        }
+        for (const [key, value] of Object.entries(frame)) {
+            if (this.unloaded) {
+                return;
+            }
+            const field = VE_DIRECT_FIELDS[key];
+            if (!field) {
+                continue;
+            }
+            try {
+                await this.ensureStateObject(field);
+                if (this.unloaded) {
+                    return;
+                }
+                await this.writeState(key, value, field);
+            } catch (error) {
+                this.log.error(`Could not publish ${key}: ${this.errorText(error)}`);
+            }
+        }
+    }
+
+    ensureStateObject(field) {
+        const existing = this.objectPromises.get(field.id);
+        if (existing) {
+            return existing;
+        }
+        const operation = (async () => {
+            /** @type {ioBroker.StateCommon} */
+            const common = {
+                name: field.label,
+                type: field.type,
+                role: field.role,
+                read: true,
+                write: false,
+                unit: field.unit,
+                desc: field.descr,
+            };
+            await this.setObjectNotExistsAsync(field.id, { type: 'state', common, native: {} });
+            if (this.unloaded) {
+                return;
+            }
+            await this.extendObjectAsync(field.id, { common });
+        })();
+        this.objectPromises.set(field.id, operation);
+        void operation.catch(() => this.objectPromises.delete(field.id));
+        return operation;
+    }
+
+    writeState(key, value, field) {
+        const previous = this.stateQueues.get(key) || Promise.resolve();
+        const result = previous
+            .catch(() => undefined)
+            .then(async () => {
+                if (field && this.expireSeconds > 0 && field.expire) {
+                    await this.setStateAsync(key, { val: value, ack: true, expire: this.expireSeconds });
+                } else if (field) {
+                    await this.setStateChangedAsync(key, { val: value, ack: true });
                 } else {
-                    this.log.debug(`Message buffer active, message ignored`);
+                    await this.setStateAsync(key, { val: value, ack: true });
                 }
-
-                // Indicate connection status
-                this.setState('info.connection', true, true);
-                // Clear running timer
-                if (polling) {
-                    this.clearTimeout(polling);
-                    polling = null;
-                }
-                // timer
-                polling = this.setTimeout(() => {
-                    // Set time-out on connecting state when 10 seconds no information received
-                    this.setState('info.connection', false, true);
-                    this.log.error('No data received for 10 seconds, connection lost ?');
-                }, 10000);
-            });
-
-            parser.on('error', error => {
-                this.log.error(`Issue handling serial port connection : ${JSON.stringify(error)}`);
-                this.setState('info.connection', false, true);
-            });
-        } catch (error) {
-            this.log.error('Connection to VE.Direct device failed !');
-            this.setState('info.connection', false, true);
-            this.errorHandler(error);
-        }
-    }
-
-    async parse_serial(line) {
-        try {
-            this.log.debug(`Line : ${line}`);
-            const res = line.split('\t');
-            if (stateAttr[res[0]] !== undefined) {
-                switch (
-                    res[0] // Used for special modifications to write a state with correct values and types
-                ) {
-                    case 'CE':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'V':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'V2':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'V3':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'VS':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'VM':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'DM':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
-                        break;
-
-                    case 'VPV':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'I':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'I2':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'I3':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'IL':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'SOC':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
-                        break;
-
-                    case 'AR':
-                        this.stateSetCreate(res[0], res[0], await this.get_alarm_reason(res[1]));
-                        break;
-
-                    case 'WARN':
-                        this.stateSetCreate(res[0], res[0], await this.get_alarm_reason(res[1]));
-                        break;
-
-                    case 'OR':
-                        this.stateSetCreate(res[0], res[0], await this.get_off_reason(res[1]));
-                        break;
-
-                    case 'H6':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'H7':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'H8':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'H15':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'H16':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 1000);
-                        break;
-
-                    case 'H17':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'H18':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'H19':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'H20':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'H22':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'ERR':
-                        this.stateSetCreate(res[0], res[0], await this.get_err_state(res[1]));
-                        break;
-
-                    case 'CS':
-                        this.stateSetCreate(res[0], res[0], await this.get_cs_state(res[1]));
-                        break;
-
-                    case 'PID':
-                        this.stateSetCreate(res[0], res[0], await this.get_product_longname(res[1]));
-                        break;
-
-                    case 'MODE':
-                        this.stateSetCreate(res[0], res[0], await this.get_device_mode(res[1]));
-                        break;
-
-                    case 'AC_OUT_V':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'AC_OUT_I':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
-                        break;
-
-                    case 'MPPT':
-                        this.stateSetCreate(res[0], res[0], await this.get_mppt_mode(res[1]));
-                        break;
-
-                    case 'MON':
-                        this.stateSetCreate(res[0], res[0], await this.get_monitor_type(res[1]));
-                        break;
-
-                    case 'DC_IN_V':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 100);
-                        break;
-
-                    case 'DC_IN_I':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]) / 10);
-                        break;
-
-                    case 'DC_IN_P':
-                        this.stateSetCreate(res[0], res[0], Math.floor(res[1]));
-                        break;
-
-                    default: // Used for all other measure points with no required special handling
-                        this.stateSetCreate(res[0], res[0], res[1]);
-                        break;
-                }
+            })
+            .then(() => undefined);
+        const tracked = result.then(
+            () => undefined,
+            () => undefined,
+        );
+        this.stateQueues.set(key, tracked);
+        void tracked.then(() => {
+            if (this.stateQueues.get(key) === tracked) {
+                this.stateQueues.delete(key);
             }
+        });
+        return result;
+    }
+
+    async safeSetConnectionState(connected) {
+        if (this.connectionRequested === connected) {
+            return;
+        }
+        this.connectionRequested = connected;
+        try {
+            await this.writeState('info.connection', connected);
+            this.connectionState = connected;
         } catch (error) {
-            this.log.error('Connection to VE.Direct device failed !');
-            this.setState('info.connection', false, true);
-            this.errorHandler(error);
+            if (this.connectionRequested === connected) {
+                this.connectionRequested = undefined;
+            }
+            this.log.error(`Could not update info.connection: ${this.errorText(error)}`);
         }
     }
 
-    /**
-     * Is called when adapter shuts down - callback has to be called under any circumstances!
-     *
-     * @param {() => void} callback Callback that must be called on completion
-     */
+    logSerialError(error) {
+        const now = Date.now();
+        const text = this.errorText(error);
+        if (text === this.lastSerialError && now - this.lastSerialErrorTime < ERROR_LOG_COOLDOWN_MS) {
+            return;
+        }
+        this.lastSerialError = text;
+        this.lastSerialErrorTime = now;
+        this.log.error(`VE.Direct serial error: ${text}`);
+    }
+
     onUnload(callback) {
-        this.setState('info.connection', false, true);
-        try {
-            port.close();
-            this.log.info('VE.Direct terminated, all USB connections closed');
-            if (timeouts['mesageBuffer']) {
-                this.clearTimeout(timeouts['mesageBuffer']);
-                timeouts['mesageBuffer'] = null;
+        if (this.unloadPromise) {
+            void this.unloadPromise.then(callback, callback);
+            return;
+        }
+        this.unloaded = true;
+        if (this.watchDogInterval) {
+            clearInterval(this.watchDogInterval);
+            this.watchDogInterval = undefined;
+        }
+        if (this.sampleTimer) {
+            clearTimeout(this.sampleTimer);
+            this.sampleTimer = undefined;
+        }
+        this.pendingSample = null;
+        this.com.onFrame = undefined;
+        this.com.onValidFrame = undefined;
+        const pendingWatchDog = this.activeWatchDog;
+        const pendingReady = this.readyPromise;
+        const operation = (async () => {
+            const pending = [
+                this.com
+                    .close()
+                    .catch(error => this.log.error(`Error closing VE.Direct port: ${this.errorText(error)}`)),
+            ];
+            if (pendingWatchDog) {
+                pending.push(pendingWatchDog.catch(() => undefined));
             }
-            if (polling) {
-                this.clearTimeout(polling);
-                polling = null;
+            if (pendingReady) {
+                pending.push(pendingReady.catch(() => undefined));
             }
-
+            await Promise.all(pending);
+            await this.safeSetConnectionState(false);
+            await Promise.all([...this.stateQueues.values()].map(promise => promise.catch(() => undefined)));
+            await this.frameQueue.catch(() => undefined);
+        })();
+        this.unloadPromise = operation;
+        void operation.then(callback, error => {
+            this.log.error(`Error during VE.Direct unload: ${this.errorText(error)}`);
             callback();
-        } catch (e) {
-            callback();
-            this.sendSentry(`[onUnload] ${e}`);
-        }
+        });
     }
 
-    async get_product_longname(pid) {
-        let name;
-        try {
-            name = ProductNames[pid].pid;
-        } catch {
-            name = `unknown PID = ${pid}`;
-        }
-        return name;
-    }
-
-    async get_alarm_reason(ar) {
-        let name;
-        try {
-            name = AlarmReasons[ar].reason;
-        } catch {
-            name = `unknown alarm reason = ${ar}`;
-        }
-        return name;
-    }
-
-    async get_off_reason(or) {
-        let name = null;
-        try {
-            name = OffReasons[or].reason;
-        } catch {
-            name = `unknown off reason = ${or}`;
-        }
-        return name;
-    }
-
-    async get_cap_ble(ble) {
-        let name;
-        try {
-            name = BleReasons[ble].reason;
-        } catch {
-            name = `unknown BLE reason = ${ble}`;
-        }
-        return name;
-    }
-
-    async get_cs_state(cs) {
-        let name;
-        try {
-            name = OperationStates[cs].state;
-        } catch {
-            name = `unknown operation state = ${cs}`;
-        }
-        return name;
-    }
-
-    async get_err_state(err) {
-        let name;
-        try {
-            name = ErrorNames[err].error;
-        } catch {
-            name = `unknown error state = ${err}`;
-        }
-        return name;
-    }
-
-    async get_device_mode(mode) {
-        let name;
-        try {
-            name = DeviceModes[mode].mode;
-        } catch {
-            name = `unknown device mode = ${mode}`;
-        }
-        return name;
-    }
-
-    async get_mppt_mode(mppt) {
-        let name;
-        try {
-            name = MpptModes[mppt].mode;
-        } catch {
-            name = `unknown mppt mode = ${mppt}`;
-        }
-        return name;
-    }
-
-    async get_monitor_type(monitortype) {
-        let name;
-        try {
-            name = MonitorTypes[monitortype].type;
-        } catch {
-            name = `unknown monitor type = ${monitortype}`;
-        }
-        return name;
-    }
-
-    /**
-     * @param stateName {string} ID of the state
-     * @param name {string} Name of state (also used for stattAttrlib!)
-     * @param value {boolean | number | string | null} Value of the state
-     */
-    stateSetCreate(stateName, name, value) {
-        this.log.debug(`[stateSetCreate]${stateName} with value : ${value}`);
-        // const expireTime = 0;
-        try {
-            // Try to get details from state lib, if not use defaults. throw warning is states is not known in attribute list
-            const common = {};
-            if (!stateAttr[name]) {
-                const warnMessage = `State attribute definition missing for + ${name}`;
-                if (warnMessages[name] !== warnMessage) {
-                    warnMessages[name] = warnMessage;
-                    // Send information to Sentry
-                    this.sendSentry(warnMessage);
-                }
-            }
-            const createStateName = stateName;
-            this.log.debug(`[stateSetCreate] state attribute from lib ${JSON.stringify(stateAttr[name])}`);
-            common.name = stateAttr[name] !== undefined ? stateAttr[name].name || name : name;
-            common.type = stateAttr[name] !== undefined ? stateAttr[name].type || typeof value : typeof value;
-            common.role = stateAttr[name] !== undefined ? stateAttr[name].role || 'state' : 'state';
-            common.read = true;
-            common.unit = stateAttr[name] !== undefined ? stateAttr[name].unit || '' : '';
-            common.write = stateAttr[name] !== undefined ? stateAttr[name].write || false : false;
-
-            if (
-                !this.createdStatesDetails[stateName] ||
-                (this.createdStatesDetails[stateName] &&
-                    (common.name !== this.createdStatesDetails[stateName].name ||
-                        common.name !== this.createdStatesDetails[stateName].name ||
-                        common.type !== this.createdStatesDetails[stateName].type ||
-                        common.role !== this.createdStatesDetails[stateName].role ||
-                        common.read !== this.createdStatesDetails[stateName].read ||
-                        common.unit !== this.createdStatesDetails[stateName].unit ||
-                        common.write !== this.createdStatesDetails[stateName].write))
-            ) {
-                this.log.debug(`[stateSetCreate] An attribute has changed for : ${stateName}`);
-
-                this.extendObject(createStateName, {
-                    type: 'state',
-                    common,
-                });
-            } else {
-                this.log.debug(`[stateSetCreate] No attribute changes for : ${stateName}, processing normally`);
-            }
-
-            // Store current object definition to memory
-            this.createdStatesDetails[stateName] = common;
-
-            // Set value to state including expiration time
-            if (value != null) {
-                let expireTime = 0;
-                // Check if state should expire and expiration of states is active in config, if yes use preferred time
-                if (this.config.expireTime != null) {
-                    if (stateAttr[name].expire != null) {
-                        if (stateAttr[name].expire === true) {
-                            expireTime = Number(this.config.expireTime);
-                        }
-                        if (stateAttr[name].expire === false) {
-                            expireTime = 0;
-                        }
-                    }
-                }
-
-                if (common.type === 'number') {
-                    value = parseFloat(value);
-                }
-                this.setStateChanged(createStateName, {
-                    val: value,
-                    ack: true,
-                    expire: expireTime,
-                });
-            }
-
-            // Subscribe on state changes if writable
-            common.write && this.subscribeStates(createStateName);
-            this.log.debug(`[stateSetCreate] All createdStatesDetails${JSON.stringify(this.createdStatesDetails)}`);
-        } catch (error) {
-            this.sendSentry(`[stateSetCreate] ${error}`);
-        }
-    }
-
-    errorHandler(source, error, debugMode) {
-        let message = error;
-        if (error instanceof Error && error.stack != null) {
-            message = error.stack;
-        }
-        if (!debugMode) {
-            this.log.error(`${source} ${error}`);
-            this.sendSentry(`${message}`);
-        } else {
-            this.log.error(`${source} ${error}`);
-            this.log.debug(`${source} ${message}`);
-        }
-    }
-
-    /**
-     * Send error's to sentry, only if sentry not disabled
-     *
-     * @param {string} msg ID of the state
-     */
-    sendSentry(msg) {
-        if (!disableSentry) {
-            this.log.info(`[Error catched and send to Sentry, thank you collaborating!] error: ${msg}`);
-            if (this.supportsFeature && this.supportsFeature('PLUGINS')) {
-                const sentryInstance = this.getPluginInstance('sentry');
-                if (sentryInstance) {
-                    sentryInstance.getSentryObject().captureException(msg);
-                }
-            }
-        } else {
-            this.log.error(`Sentry disabled, error catched : ${msg}`);
-        }
+    errorText(error) {
+        return error instanceof Error ? error.stack || error.message : String(error);
     }
 }
 
-// @ts-expect-error parent is a valid property on module
+// @ts-expect-error module.parent exists in the CommonJS runtime.
 if (module.parent) {
-    // Export the constructor in compact mode
-    /**
-     * @param {Partial<ioBroker.AdapterOptions>} [options] Adapter options
-     */
     module.exports = options => new Vedirect(options);
+    module.exports.Vedirect = Vedirect;
 } else {
-    // otherwise start the instance directly
     new Vedirect();
 }
