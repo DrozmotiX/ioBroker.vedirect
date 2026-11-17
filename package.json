@@ -83,9 +83,6 @@
       "diff": "8.0.3",
       "serialize-javascript": "7.1.4"
     },
-    "@alcalzone/esbuild-register": {
-      "esbuild": "0.27.2"
-    },
     "@iobroker/adapter-dev": {
       "rimraf": "6.1.4"
     },
@@ -97,7 +94,8 @@
         "brace-expansion": "1.1.21"
       }
     },
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "esbuild": "0.27.2"
   },
   "bugs": {
     "url": "https://github.com/joergspoerl/ioBroker.vedirect/issues"
