@@ -53,6 +53,7 @@ Der bisherige Konfigurationsname bleibt aus Kompatibilitätsgründen erhalten, d
 - `0`: Jeder gültige Block wird verarbeitet.
 - Größer `0`: Serielle Daten werden weiterhin vollständig geparst; für die State-Publikation werden vollständige Blöcke über das Intervall zusammengeführt. Der jeweils letzte Wert jedes Felds wird anschließend geschrieben.
 - Liveness und Reconnect werden durch Sampling nicht gedrosselt.
+- Bei erkanntem Verbindungsverlust wird ein noch nicht veröffentlichter Sample-Puffer verworfen; nach einem Reconnect beginnt ein neuer Puffer, sodass keine Werte über Verbindungsgrenzen hinweg vermischt werden.
 - Es werden keine einzelnen Zeilen oder History-Blöcke mehr verworfen.
 
 ## Verbindungs- und Fehlerverhalten
@@ -61,8 +62,9 @@ Der bisherige Konfigurationsname bleibt aus Kompatibilitätsgründen erhalten, d
 - `info.connection=false`: Kein frischer gültiger Block, Open-/Serial-Fehler oder Adapterstopp.
 - Bei Datenstopp oder Disconnect wird der Port kontrolliert geschlossen und mit Cooldown erneut geöffnet.
 - Ungültige Checksummen und malformed bekannte Werte verändern keine Mess-States.
+- Nach erkanntem Verbindungsverlust werden keine gepufferten Werte mehr quittiert und keine TTL erneuert.
 - Wiederholte identische Serialfehler werden im Log gedrosselt.
-- Beim Unload wird vor dem Abschluss `info.connection=false` quittiert.
+- Beim Unload wird vor dem Abschluss `info.connection=false` quittiert; der Unload-Abschluss ist zeitlich begrenzt, damit ein hängender Serial- oder Datenbankvorgang den Adapterstopp nicht blockiert.
 
 ## Sonderwerte und Decodierung
 

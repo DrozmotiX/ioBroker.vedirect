@@ -151,6 +151,53 @@ describe('VE.Direct frame sampling', () => {
         expect(adapter.pendingSample).to.equal(null);
         expect(adapter.sampleTimer).to.equal(undefined);
     });
+
+    it('discards a pending sample when the serial link is reported down', async () => {
+        const adapter = harness();
+        adapter.samplingSeconds = 5;
+        adapter.connectionState = true;
+        adapter.connectionRequested = true;
+        adapter.acceptFrame({ V: 13.1 });
+        adapter.lastFrameTime = 0;
+
+        await adapter.watchDog();
+        expect(adapter.pendingSample).to.equal(null);
+        expect(adapter.sampleTimer).to.equal(undefined);
+
+        await clock.tickAsync(5000);
+        await adapter.frameQueue;
+        expect(adapter.setStateChangedAsync.calledWith('V')).to.equal(false);
+    });
+
+    it('starts a fresh sample generation after a reconnect', async () => {
+        const adapter = harness();
+        adapter.samplingSeconds = 5;
+        adapter.connectionState = true;
+        adapter.connectionRequested = true;
+        adapter.acceptFrame({ V: 13.1, I: 1 });
+        adapter.lastFrameTime = 0;
+        await adapter.watchDog();
+        expect(adapter.connectionState).to.equal(false);
+
+        await adapter.safeSetConnectionState(true);
+        adapter.acceptFrame({ V: 13.2 });
+        await clock.tickAsync(5000);
+        await adapter.frameQueue;
+        expect(adapter.setStateChangedAsync.calledWith('I', { val: 1, ack: true })).to.equal(false);
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.2, ack: true })).to.equal(true);
+    });
+
+    it('does not acknowledge or renew TTL for values while the link is down', async () => {
+        const adapter = harness();
+        adapter.expireSeconds = 30;
+        adapter.connectionState = false;
+        adapter.connectionRequested = false;
+
+        await adapter.publishFrame({ V: 13.29 });
+
+        expect(adapter.setStateAsync.calledWith('V')).to.equal(false);
+        expect(adapter.setStateChangedAsync.calledWith('V')).to.equal(false);
+    });
 });
 
 describe('VE.Direct watchdog and parser integration', () => {
@@ -253,5 +300,43 @@ describe('VE.Direct configuration and unload', () => {
         await adapter.unloadPromise;
         expect(callback.calledOnce).to.equal(true);
         expect(adapter.log.error.called).to.equal(true);
+    });
+
+    it('finishes unload when initialization never settles', async () => {
+        const adapter = harness();
+        adapter.unloadTimeoutMs = 20;
+        adapter.setObjectNotExistsAsync.returns(new Promise(() => undefined));
+        adapter.handleReady();
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        await adapter.unloadPromise;
+        expect(callback.calledOnce).to.equal(true);
+    });
+
+    it('finishes unload when pending state writes never settle', async () => {
+        const adapter = harness();
+        adapter.unloadTimeoutMs = 20;
+        adapter.setObjectNotExistsAsync.returns(new Promise(() => undefined));
+        adapter.enqueueFrame({ V: 13.29 });
+        await new Promise(resolve => setImmediate(resolve));
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        await adapter.unloadPromise;
+        expect(callback.calledOnce).to.equal(true);
+    });
+
+    it('invokes each registered unload callback exactly once', async () => {
+        const adapter = harness();
+        adapter.unloadTimeoutMs = 20;
+        adapter.setObjectNotExistsAsync.returns(new Promise(() => undefined));
+        adapter.enqueueFrame({ V: 13.29 });
+        await new Promise(resolve => setImmediate(resolve));
+        const first = sinon.stub();
+        const second = sinon.stub();
+        adapter.onUnload(first);
+        adapter.onUnload(second);
+        await adapter.unloadPromise;
+        expect(first.calledOnce).to.equal(true);
+        expect(second.calledOnce).to.equal(true);
     });
 });

@@ -8,6 +8,7 @@ const WATCHDOG_INTERVAL_MS = 1000;
 const DATA_TIMEOUT_MS = 10000;
 const RECONNECT_COOLDOWN_MS = 5000;
 const ERROR_LOG_COOLDOWN_MS = 60000;
+const UNLOAD_DRAIN_TIMEOUT_MS = 5000;
 
 class Vedirect extends utils.Adapter {
     constructor(options = {}) {
@@ -26,6 +27,7 @@ class Vedirect extends utils.Adapter {
         this.frameQueue = Promise.resolve();
         this.pendingSample = null;
         this.sampleTimer = undefined;
+        this.unloadTimeoutMs = UNLOAD_DRAIN_TIMEOUT_MS;
         this.connectionState = undefined;
         this.connectionRequested = undefined;
         this.stateQueues = new Map();
@@ -198,12 +200,20 @@ class Vedirect extends utils.Adapter {
         );
     }
 
+    clearPendingSample() {
+        if (this.sampleTimer) {
+            clearTimeout(this.sampleTimer);
+            this.sampleTimer = undefined;
+        }
+        this.pendingSample = null;
+    }
+
     async publishFrame(frame) {
-        if (this.unloaded) {
+        if (this.unloaded || this.connectionRequested === false) {
             return;
         }
         for (const [key, value] of Object.entries(frame)) {
-            if (this.unloaded) {
+            if (this.unloaded || this.connectionRequested === false) {
                 return;
             }
             const field = VE_DIRECT_FIELDS[key];
@@ -277,6 +287,9 @@ class Vedirect extends utils.Adapter {
     }
 
     async safeSetConnectionState(connected) {
+        if (!connected) {
+            this.clearPendingSample();
+        }
         if (this.connectionRequested === connected) {
             return;
         }
@@ -313,37 +326,58 @@ class Vedirect extends utils.Adapter {
             clearInterval(this.watchDogInterval);
             this.watchDogInterval = undefined;
         }
-        if (this.sampleTimer) {
-            clearTimeout(this.sampleTimer);
-            this.sampleTimer = undefined;
-        }
-        this.pendingSample = null;
+        this.clearPendingSample();
         this.com.onFrame = undefined;
         this.com.onValidFrame = undefined;
-        const pendingWatchDog = this.activeWatchDog;
-        const pendingReady = this.readyPromise;
-        const operation = (async () => {
-            const pending = [
-                this.com
-                    .close()
-                    .catch(error => this.log.error(`Error closing VE.Direct port: ${this.errorText(error)}`)),
-            ];
-            if (pendingWatchDog) {
-                pending.push(pendingWatchDog.catch(() => undefined));
-            }
-            if (pendingReady) {
-                pending.push(pendingReady.catch(() => undefined));
-            }
-            await Promise.all(pending);
-            await this.safeSetConnectionState(false);
-            await Promise.all([...this.stateQueues.values()].map(promise => promise.catch(() => undefined)));
-            await this.frameQueue.catch(() => undefined);
-        })();
+        const operation = this.performUnload(this.activeWatchDog, this.readyPromise);
         this.unloadPromise = operation;
-        void operation.then(callback, error => {
-            this.log.error(`Error during VE.Direct unload: ${this.errorText(error)}`);
+        let unloadCallbackInvoked = false;
+        const finish = error => {
+            if (unloadCallbackInvoked) {
+                return;
+            }
+            unloadCallbackInvoked = true;
+            if (error) {
+                this.log.error(`Error during VE.Direct unload: ${this.errorText(error)}`);
+            }
             callback();
+        };
+        void operation.then(() => finish(), finish);
+    }
+
+    async performUnload(pendingWatchDog, pendingReady) {
+        const deadline = Date.now() + this.unloadTimeoutMs;
+        const pending = [
+            this.com.close().catch(error => this.log.error(`Error closing VE.Direct port: ${this.errorText(error)}`)),
+        ];
+        if (pendingWatchDog) {
+            pending.push(pendingWatchDog.catch(() => undefined));
+        }
+        if (pendingReady) {
+            pending.push(pendingReady.catch(() => undefined));
+        }
+        await this.settleWithin(Promise.all(pending), deadline);
+        await this.settleWithin(this.safeSetConnectionState(false), deadline);
+        await this.settleWithin(Promise.all([...this.stateQueues.values(), this.frameQueue]), deadline);
+    }
+
+    settleWithin(promise, deadline) {
+        const remaining = Math.max(0, deadline - Date.now());
+        /** @type {Promise<void>} */
+        const settled = new Promise(resolve => {
+            const timer = setTimeout(resolve, remaining);
+            promise.then(
+                () => {
+                    clearTimeout(timer);
+                    resolve();
+                },
+                () => {
+                    clearTimeout(timer);
+                    resolve();
+                },
+            );
         });
+        return settled;
     }
 
     errorText(error) {
