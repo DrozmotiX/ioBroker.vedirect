@@ -119,11 +119,12 @@ Der Produktions-Audit ist ohne Befund. Im Entwicklungs-Toolchain-Audit verbleibt
 - (joerg) Instanzgebundener SerialPort-12-Lifecycle, Reconnect, sichere State-Queues und Unload (#2).
 - (joerg) Frame-Sampling, Expire-/Changed-Verhalten und Mehrinstanzbetrieb korrigiert (#2).
 - (joerg) Dummy-Test durch reale Protokoll-/Lifecycle-/Adaptertests ersetzt; CI und Dokumentation erweitert (#3).
+- (joerg) Node.js 22+ vorausgesetzt, CI auf Node.js 22/24/26 erweitert und Release-Tooling modernisiert.
 
 ### 0.3.3 (2024-09-10)
 
 - (DutchmanNL) Repository checker compliance updates.
-- (DutchmanNL) Update dependencies; der aktuelle Fork deklariert korrekt Node.js 22+.
+- (DutchmanNL) Update dependencies for Node.js 18+ compatibility.
 
 ### 0.3.1 (2023-10-29)
 

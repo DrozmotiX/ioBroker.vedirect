@@ -1,8 +1,7 @@
 {
-    "Buffer messages in seconds to avoid system overload": "Puffern Sie Nachrichten in Sekundenschnelle, um eine Systemüberlastung zu vermeiden",
     "Leave empty or 0 to not expire states": "Leer lassen oder 0, um den Status nicht abzulaufen",
     "Please choose your preferred settings": "Bitte wählen Sie Ihre bevorzugten Einstellungen",
-    "USBDevice": "USB-Geräteanschluss",
-    "expireTime": "Ablaufzeit der Zustände in Sekunden",
-    "messageBuffer": "Puffer in Sekunden, um Nachrichten zu ignorieren"
+    "VE.Direct serial port": "VE.Direct serielle Schnittstelle",
+    "State expiration (seconds)": "Ablaufzeit der Zustände (Sekunden)",
+    "Frame sampling interval (seconds)": "Frame-Sampling-Intervall (Sekunden)"
 }
