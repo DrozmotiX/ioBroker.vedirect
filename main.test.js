@@ -5,6 +5,7 @@ const { expect } = require('chai');
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 const { VeDirectParser } = require('./lib/veDirect/veDirectParser');
+const { VeDirectCom } = require('./lib/veDirectCom');
 
 class Adapter extends EventEmitter {}
 const { Vedirect } = proxyquire.noCallThru()('./main', {
@@ -38,6 +39,45 @@ function makeFrame(fields) {
         sum = (sum + byte) & 0xff;
     }
     return Buffer.concat([body, Buffer.from([(256 - sum) & 0xff])]);
+}
+
+class FakeSerialPort extends EventEmitter {
+    constructor() {
+        super();
+        this.isOpen = false;
+        this.closeCalls = 0;
+    }
+
+    set(_options, callback) {
+        callback(null);
+    }
+
+    close(callback) {
+        this.closeCalls++;
+        this.isOpen = false;
+        this.emit('close');
+        callback(null);
+    }
+}
+
+/** Adapter wired to the real VeDirectCom and parser, with replaceable fake serial ports. */
+function serialHarness() {
+    const adapter = harness();
+    const ports = [];
+    adapter.com = new VeDirectCom((_path, _options, callback) => {
+        const port = new FakeSerialPort();
+        ports.push(port);
+        process.nextTick(() => {
+            port.isOpen = true;
+            callback();
+        });
+        return port;
+    });
+    return { adapter, ports };
+}
+
+function flush() {
+    return new Promise(resolve => setImmediate(resolve));
 }
 
 describe('VE.Direct adapter state handling', () => {
@@ -345,6 +385,109 @@ describe('VE.Direct watchdog and parser integration', () => {
         await new Promise(resolve => setImmediate(resolve));
         expect(adapter.connectionState).to.equal(true);
         expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.29, ack: true })).to.equal(true);
+    });
+});
+
+describe('VE.Direct adapter over the real serial lifecycle', () => {
+    let clock;
+    afterEach(() => {
+        if (clock) {
+            clock.restore();
+            clock = undefined;
+        }
+    });
+
+    function useFakeClock() {
+        clock = sinon.useFakeTimers({
+            now: 100000,
+            toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'],
+        });
+    }
+
+    async function startAdapter(adapter) {
+        await adapter.onReady();
+        clearInterval(adapter.watchDogInterval);
+        adapter.watchDogInterval = undefined;
+        await flush();
+    }
+
+    it('drops a pending sample when the link is lost instead of publishing stale values or renewing TTL', async () => {
+        useFakeClock();
+        const { adapter, ports } = serialHarness();
+        adapter.config = { USBDevice: '/dev/fake', expireTime: 30, messageBuffer: 60 };
+        await startAdapter(adapter);
+        expect(ports).to.have.lengthOf(1);
+
+        ports[0].emit('data', makeFrame([['V', '13290'], ['I', '-1250']]));
+        await flush();
+        expect(adapter.pendingSample).to.deep.equal({ V: 13.29, I: -1.25 });
+
+        // Unplug: the port reports closed, then the 10 s data timeout expires.
+        ports[0].isOpen = false;
+        ports[0].emit('close');
+        adapter.lastFrameTime = 0;
+        await clock.tickAsync(11000);
+        await adapter.watchDog();
+        expect(adapter.pendingSample).to.equal(null);
+        expect(adapter.sampleTimer).to.equal(undefined);
+
+        await clock.tickAsync(60000);
+        await adapter.frameQueue;
+        expect(adapter.setStateAsync.getCalls().filter(call => call.args[0] === 'V')).to.have.lengthOf(0);
+        expect(adapter.setStateChangedAsync.getCalls().filter(call => call.args[0] === 'V')).to.have.lengthOf(0);
+        expect(adapter.connectionState).to.equal(false);
+        expect(ports).to.have.lengthOf(2);
+    });
+
+    it('reopens the port after the link is lost and publishes fresh frames again', async () => {
+        useFakeClock();
+        const { adapter, ports } = serialHarness();
+        adapter.config = { USBDevice: '/dev/fake', expireTime: 0, messageBuffer: 0 };
+        await startAdapter(adapter);
+
+        ports[0].emit('data', makeFrame([['V', '13290']]));
+        await adapter.frameQueue;
+        await flush();
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.29, ack: true })).to.equal(true);
+        expect(adapter.connectionState).to.equal(true);
+
+        ports[0].isOpen = false;
+        ports[0].emit('close');
+        adapter.lastFrameTime = 0;
+        await clock.tickAsync(11000);
+        await adapter.watchDog();
+        await flush();
+        expect(adapter.connectionState).to.equal(false);
+        expect(ports).to.have.lengthOf(2);
+        expect(ports[1].isOpen).to.equal(true);
+
+        ports[1].emit('data', makeFrame([['V', '13400']]));
+        await adapter.frameQueue;
+        await flush();
+        expect(adapter.setStateChangedAsync.calledWith('V', { val: 13.4, ack: true })).to.equal(true);
+        expect(adapter.connectionState).to.equal(true);
+    });
+
+    it('writes a final disconnected state on unload and releases the serial port', async () => {
+        const { adapter, ports } = serialHarness();
+        adapter.config = { USBDevice: '/dev/fake', expireTime: 0, messageBuffer: 0 };
+        await startAdapter(adapter);
+
+        ports[0].emit('data', makeFrame([['V', '13290']]));
+        await adapter.frameQueue;
+        await flush();
+        expect(adapter.connectionState).to.equal(true);
+
+        const callback = sinon.stub();
+        adapter.onUnload(callback);
+        await adapter.unloadPromise;
+
+        expect(callback.calledOnce).to.equal(true);
+        expect(adapter.watchDogInterval).to.equal(undefined);
+        expect(adapter.connectionState).to.equal(false);
+        expect(adapter.setStateAsync.lastCall.args).to.deep.equal(['info.connection', { val: false, ack: true }]);
+        expect(ports[0].isOpen).to.equal(false);
+        expect(ports[0].closeCalls).to.equal(1);
     });
 });
 
