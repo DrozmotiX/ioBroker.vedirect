@@ -318,6 +318,41 @@ describe('VE.Direct byte parser', () => {
         }
     });
 
+    it('does not let garbage turn malformed or overflowing blocks into valid frames', () => {
+        const vectors = [
+            makeRawFrame('X\nV\t0x3336\r\nX_PAD\tPPe\r\n\r\nV\t13118\r\nChecksum\t'),
+            makeRawFrame(`X\n${'A'.repeat(128)}__\`\r\nV\t13118\r\nChecksum\t`),
+        ];
+        const next = makeFrame([['I', '1000']]);
+        for (const malformed of vectors) {
+            const stream = Buffer.concat([malformed, next]);
+            for (let split = 0; split <= stream.length; split++) {
+                const parser = new VeDirectParser();
+                const frames = collect(parser);
+                let validFrames = 0;
+                parser.onValidFrame = () => validFrames++;
+                parser.receive(stream.subarray(0, split));
+                parser.receive(stream.subarray(split));
+                expect(frames, `split ${split}`).to.deep.equal([{ I: 1 }]);
+                expect(validFrames, `split ${split}`).to.equal(1);
+            }
+        }
+    });
+
+    it('recovers after every possible orphan checksum byte at every chunk boundary', () => {
+        const frame = makeFrame([['V', '13118']]);
+        for (let orphan = 0; orphan <= 0xff; orphan++) {
+            const stream = Buffer.concat([Buffer.from([orphan]), frame]);
+            for (let split = 0; split <= stream.length; split++) {
+                const parser = new VeDirectParser();
+                const frames = collect(parser);
+                parser.receive(stream.subarray(0, split));
+                parser.receive(stream.subarray(split));
+                expect(frames, `orphan ${orphan}, split ${split}`).to.deep.equal([{ V: 13.118 }]);
+            }
+        }
+    });
+
     it('resynchronizes on the first complete block after an orphaned checksum byte', () => {
         const parser = new VeDirectParser();
         const frames = collect(parser);
