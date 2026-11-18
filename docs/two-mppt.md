@@ -2,7 +2,7 @@
 
 ## Aktueller Produktivaufbau
 
-Auf dem pi3 existieren zwei aktivierte Instanzen mit jeweils eigenem SmartSolar MPPT 100/50:
+Auf dem pi4 (ioBroker-Host `iobroker`) existieren zwei aktivierte Instanzen mit jeweils eigenem SmartSolar MPPT 100/50:
 
 | Instanz | Konfigurierter serieller Pfad | Reale Felder |
 |---|---|---|
