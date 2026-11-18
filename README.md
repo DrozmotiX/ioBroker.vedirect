@@ -32,6 +32,8 @@ Offizielle Referenzen:
 - [VE.Direct Protocol 3.34](https://www.victronenergy.com/upload/documents/VE.Direct-Protocol-3.34.pdf)
 - [VE.Direct Protocol FAQ](https://www.victronenergy.com/live/vedirect_protocol:faq)
 
+Für den realen Betrieb von zwei SmartSolar-MPPTs einschließlich State-Übersicht und später möglicher HEX-Schreiboptionen siehe [docs/two-mppt.md](docs/two-mppt.md).
+
 ## Konfiguration
 
 ### Serielle Schnittstelle
